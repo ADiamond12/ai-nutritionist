@@ -13,6 +13,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Calculates BMI and a coarse BMI category from height and weight.
 - Estimates daily energy, protein, fiber, sodium, saturated-fat, and sugar guardrails from profile inputs.
 - Separates weight goal (`auto`, maintain, lose, gain) from nutrition focus (`balanced`, higher protein, higher fiber, lighter meals, lower sodium).
+- Uses a bounded calorie deficit for explicit weight-loss plans and scales portions when a generated plan sits too far above the target.
 - Optionally uses body-fat percentage to estimate lean body mass and raise protein targets.
 - Builds an expanded processed USDA/FNDDS food catalog with meal tags, serving sizes, vegetarian flags, vegan flags, and processing signals.
 - Adds a curated Mediterranean/Greek extension with practical foods such as Greek yogurt bowls, dakos-style toast, lentil soup, fasolada, chickpea salads, grilled fish, horta, Greek salads, and olive-oil vegetable sides.
@@ -22,7 +23,8 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Supports avoid/prefer terms so users can steer recommendations without making medical claims.
 - Supports Mediterranean/Greek, omnivore, vegetarian, vegan, and keto-style / low-carb dietary patterns.
 - Builds a 7-day plan option with Mediterranean-style rotation across poultry, fish/seafood, legumes, vegetables, whole grains/starches, and olive-oil sides.
-- Produces meal titles, item-level nutrient totals, macro percentages, daily progress, swap alternatives, and plain-language explanations.
+- Produces meal titles, item-level nutrient totals, macro percentages, daily progress, swap alternatives, local thumbs feedback, and plain-language explanations.
+- Stores feedback only in the current Streamlit session by default; it can be exported as CSV, but it is not uploaded by the app.
 
 ## Screenshots
 
@@ -53,6 +55,8 @@ python -m pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+
+The Streamlit app requires the user to press `Generate meal plan` before recommendations appear. After generation, users can leave thumbs feedback for the full plan or individual meals. Negative feedback is stored locally in `st.session_state` and can be used by `Regenerate with feedback` as a temporary avoid signal for the next plan.
 
 ## CLI Usage
 
@@ -137,12 +141,14 @@ See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARC
 pytest -q
 ```
 
-Coverage includes BMI/category logic, explicit weight goals, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
+Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, local feedback UI contracts, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
 
 ## Limitations
 
 - BMI is a simplified population-level indicator and is not a diagnosis.
 - Energy targets are estimates based on profile assumptions, not clinical prescriptions.
+- Weight-loss targets use a bounded deficit heuristic and portion scaling, but they do not guarantee weight change.
+- Feedback is local product feedback, not a clinical outcome label or diagnosis signal.
 - USDA nutrient rows and curated Mediterranean estimates are useful reference data but do not capture allergies, medication interactions, budget, cooking method, appetite, disease state, or clinician guidance.
 - Total sugars are not the same as added sugars. The system treats sugar as a ranking and guardrail signal, not a medical rule.
 - Vegan recommendations include plant-only filtering but do not solve B12, vitamin D, iron, iodine, omega-3, or calcium planning by themselves.

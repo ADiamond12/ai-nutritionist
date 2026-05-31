@@ -29,6 +29,38 @@ WEIGHT_GOALS = {
     "Gain weight": "gain",
 }
 
+PLAN_VARIATIONS = {
+    "mediterranean": [
+        ("chicken", "souvlaki"),
+        ("salmon", "fish"),
+        ("lentil", "fasolada"),
+        ("cod", "plaki"),
+        ("chickpea", "gigantes"),
+        ("tuna", "white bean"),
+    ],
+    "omnivore": [("chicken",), ("salmon", "fish"), ("beans", "lentil"), ("turkey",)],
+    "vegetarian": [("egg", "yogurt"), ("lentil", "beans"), ("chickpea", "hummus"), ("tofu",)],
+    "vegan": [("lentil", "beans"), ("tofu", "soy"), ("chickpea", "hummus"), ("quinoa", "beans")],
+    "keto_style": [("chicken",), ("salmon", "fish"), ("egg",), ("turkey",)],
+}
+
+FEEDBACK_AVOID_TERMS = (
+    "chicken",
+    "souvlaki",
+    "salmon",
+    "cod",
+    "tuna",
+    "lentil",
+    "fasolada",
+    "chickpea",
+    "gigantes",
+    "beans",
+    "yogurt",
+    "egg",
+    "turkey",
+    "tofu",
+)
+
 
 st.set_page_config(page_title="AI Nutritionist", page_icon="AI", layout="wide")
 
@@ -71,6 +103,92 @@ def _items_frame(items: list[dict[str, object]]) -> pd.DataFrame:
     ]
 
 
+def _ensure_session_state() -> None:
+    st.session_state.setdefault("feedback_log", [])
+    st.session_state.setdefault("last_plan", None)
+    st.session_state.setdefault("plan_variant", 0)
+
+
+def _merge_terms(*values: str | list[str] | tuple[str, ...] | None) -> list[str]:
+    merged: list[str] = []
+    for value in values:
+        if not value:
+            continue
+        if isinstance(value, str):
+            terms = value.replace(";", ",").replace("\n", ",").split(",")
+        else:
+            terms = list(value)
+        for term in terms:
+            cleaned = str(term).strip().lower()
+            if cleaned and cleaned not in merged:
+                merged.append(cleaned)
+    return merged
+
+
+def _variation_terms(dietary_pattern: str, variant: int) -> tuple[str, ...]:
+    options = PLAN_VARIATIONS.get(dietary_pattern, ())
+    if not options or variant <= 0:
+        return ()
+    return options[(variant - 1) % len(options)]
+
+
+def _feedback_avoid_terms() -> list[str]:
+    terms: list[str] = []
+    for entry in st.session_state.feedback_log:
+        if entry.get("sentiment") != "not_liked":
+            continue
+        for term in entry.get("avoid_terms", []):
+            if term not in terms:
+                terms.append(term)
+    return terms
+
+
+def _main_feedback_terms(items: list[dict[str, object]]) -> list[str]:
+    names = " ".join(str(item.get("food_name", "")).lower() for item in items)
+    return [term for term in FEEDBACK_AVOID_TERMS if term in names][:3]
+
+
+def _feedback_widget(
+    *,
+    scope: str,
+    label: str,
+    items: list[dict[str, object]],
+    context: dict[str, object],
+) -> None:
+    st.caption(f"Was this {scope} useful?")
+    key = f"feedback_{scope}_{label}".lower().replace(" ", "_").replace("/", "_")
+    value = st.feedback("thumbs", key=key)
+    marker_key = f"{key}_recorded"
+    if value is None or st.session_state.get(marker_key) == value:
+        return
+
+    sentiment = "liked" if value == 1 else "not_liked"
+    st.session_state.feedback_log.append(
+        {
+            "timestamp_utc": pd.Timestamp.utcnow().isoformat(),
+            "scope": scope,
+            "label": label,
+            "sentiment": sentiment,
+            "avoid_terms": _main_feedback_terms(items) if sentiment == "not_liked" else [],
+            **context,
+        }
+    )
+    st.session_state[marker_key] = value
+    if sentiment == "not_liked":
+        st.caption("Feedback saved locally. Use Regenerate with feedback to try a different version.")
+
+
+def _feedback_csv() -> str:
+    if not st.session_state.feedback_log:
+        return "timestamp_utc,scope,label,sentiment,avoid_terms\n"
+    frame = pd.DataFrame(st.session_state.feedback_log).copy()
+    if "avoid_terms" in frame.columns:
+        frame["avoid_terms"] = frame["avoid_terms"].apply(lambda terms: ", ".join(terms or []))
+    return frame.to_csv(index=False)
+
+
+_ensure_session_state()
+
 st.title("AI Nutritionist")
 st.caption("Interactive USDA-backed planner with a deterministic neural food ranker and preference-aware guardrails.")
 st.warning(SAFETY_DISCLAIMER)
@@ -100,10 +218,26 @@ with st.sidebar:
         st.caption("Separate terms with commas. Matching is conservative substring matching on USDA food names.")
 
     submitted = st.button("Generate meal plan", type="primary", use_container_width=True)
+    regenerate = False
+    if st.session_state.last_plan is not None:
+        regenerate = st.button("Regenerate with feedback", use_container_width=True)
+        if _feedback_avoid_terms():
+            st.caption("Uses disliked meals from this local session as avoid signals.")
 
-should_generate = submitted
+should_generate = submitted or regenerate
 
 if should_generate:
+    if regenerate:
+        st.session_state.plan_variant += 1
+    else:
+        st.session_state.plan_variant = 0
+    dietary_pattern = DIETARY_PATTERNS[dietary_label]
+    effective_avoid_terms = _merge_terms(avoid_foods, _feedback_avoid_terms())
+    effective_preferred_terms = _merge_terms(
+        preferred_foods,
+        _variation_terms(dietary_pattern, st.session_state.plan_variant),
+    )
+
     with st.spinner("Ranking USDA foods and building the meal plan..."):
         weekly_result = None
         if plan_length == "Weekly":
@@ -113,12 +247,12 @@ if should_generate:
                 age=age,
                 sex=sex,
                 activity=activity,
-                dietary_pattern=DIETARY_PATTERNS[dietary_label],
+                dietary_pattern=dietary_pattern,
                 body_fat_pct=body_fat_pct,
                 weight_goal=WEIGHT_GOALS[weight_goal_label],
                 goal_focus=GOAL_FOCUS[focus_label],
-                avoid_terms=avoid_foods,
-                preferred_terms=preferred_foods,
+                avoid_terms=effective_avoid_terms,
+                preferred_terms=effective_preferred_terms,
                 top_k=items_per_meal,
             )
             result = weekly_result.days[0].result
@@ -129,33 +263,59 @@ if should_generate:
                 age=age,
                 sex=sex,
                 activity=activity,
-                dietary_pattern=DIETARY_PATTERNS[dietary_label],
+                dietary_pattern=dietary_pattern,
                 body_fat_pct=body_fat_pct,
                 weight_goal=WEIGHT_GOALS[weight_goal_label],
                 goal_focus=GOAL_FOCUS[focus_label],
-                avoid_terms=avoid_foods,
-                preferred_terms=preferred_foods,
+                avoid_terms=effective_avoid_terms,
+                preferred_terms=effective_preferred_terms,
                 top_k=items_per_meal,
             )
+    st.session_state.last_plan = {
+        "result": result,
+        "weekly_result": weekly_result,
+        "dietary_pattern": dietary_pattern,
+        "dietary_label": dietary_label,
+        "weight_goal_label": weight_goal_label,
+        "focus_label": focus_label,
+        "plan_length": plan_length,
+    }
 
-    if DIETARY_PATTERNS[dietary_label] == "vegan":
+plan_state = st.session_state.last_plan
+
+if plan_state is not None:
+    result = plan_state["result"]
+    weekly_result = plan_state["weekly_result"]
+    dietary_pattern = str(plan_state["dietary_pattern"])
+    dietary_label = str(plan_state["dietary_label"])
+    weight_goal_label = str(plan_state["weight_goal_label"])
+    focus_label = str(plan_state["focus_label"])
+    feedback_context = {
+        "dietary_pattern": dietary_pattern,
+        "weight_goal": result.preferences["weight_goal"],
+        "nutrition_focus": result.preferences["goal_focus"],
+        "bmi": round(result.bmi.value, 1),
+        "daily_target_calories": result.daily_targets.calories,
+    }
+
+    if dietary_pattern == "vegan":
         st.info(
             "Vegan mode filters for conservative plant-only foods. It does not replace planning for B12, "
             "vitamin D, iron, iodine, omega-3, calcium, or professional dietary guidance."
         )
-    if DIETARY_PATTERNS[dietary_label] == "keto_style":
+    if dietary_pattern == "keto_style":
         st.info(
             "Keto-style mode is a low-carbohydrate wellness filter, not a therapeutic ketogenic diet. "
             "It should not be used to manage diabetes, epilepsy, pregnancy nutrition, or medical conditions."
         )
 
     if weekly_result is not None:
-        profile_tab, weekly_tab, meal_tab, nutrition_tab, alternatives_tab, data_tab = st.tabs(
-            ["Profile", "Weekly Plan", "Day Detail", "Daily Nutrition", "Alternatives", "Data Explorer"]
+        profile_tab, weekly_tab, meal_tab, nutrition_tab, alternatives_tab, feedback_tab, data_tab = st.tabs(
+            ["Profile", "Weekly Plan", "Day Detail", "Daily Nutrition", "Alternatives", "Feedback", "Data Explorer"]
         )
     else:
-        profile_tab, meal_tab, nutrition_tab, alternatives_tab, data_tab = st.tabs(
-            ["Profile", "Meal Plan", "Daily Nutrition", "Alternatives", "Data Explorer"]
+        profile_tab, meal_tab, nutrition_tab, alternatives_tab, feedback_tab, data_tab = st.tabs(
+            ["Profile", "Meal Plan", "Daily Nutrition", "Alternatives", "Feedback", "Data Explorer"]
         )
 
     with profile_tab:
@@ -182,6 +342,13 @@ if should_generate:
                 f"Avoiding: {', '.join(result.preferences['avoid_terms']) or 'none'} | "
                 f"Preferring: {', '.join(result.preferences['preferred_terms']) or 'none'}"
             )
+        st.divider()
+        _feedback_widget(
+            scope="plan",
+            label="overall",
+            items=[item for meal in result.meals for item in meal.items],
+            context=feedback_context,
+        )
 
     if weekly_result is not None:
         with weekly_tab:
@@ -224,6 +391,12 @@ if should_generate:
                     for group, alternatives in meal.alternatives.items():
                         st.write(f"**{group.replace('_', ' ').title()}**")
                         st.dataframe(_items_frame(alternatives[:2]), hide_index=True, use_container_width=True)
+                _feedback_widget(
+                    scope="meal",
+                    label=meal.name,
+                    items=meal.items,
+                    context={**feedback_context, "meal": meal.name},
+                )
 
     with nutrition_tab:
         totals = result.daily_totals
@@ -258,6 +431,23 @@ if should_generate:
                 for group, alternatives in meal.alternatives.items():
                     st.write(f"**{group.replace('_', ' ').title()}**")
                     st.dataframe(_items_frame(alternatives), hide_index=True, use_container_width=True)
+
+    with feedback_tab:
+        st.subheader("Feedback")
+        st.caption("Feedback is stored only in this local Streamlit session and is not uploaded.")
+        if st.session_state.feedback_log:
+            st.dataframe(pd.DataFrame(st.session_state.feedback_log), hide_index=True, use_container_width=True)
+            st.download_button(
+                "Download feedback CSV",
+                data=_feedback_csv(),
+                file_name="ai_nutritionist_feedback.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+            if _feedback_avoid_terms():
+                st.info("Negative feedback will be used as local avoid terms when you click Regenerate with feedback.")
+        else:
+            st.write("No feedback recorded yet.")
 
     with data_tab:
         st.subheader("USDA Catalog Explorer")

@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +65,18 @@ LOW_PRACTICALITY_STANDALONE_TERMS = (
     "sunflower seeds",
     "fruit dressing",
     "dressing",
+)
+
+SCALABLE_NUTRIENT_KEYS = (
+    "serving_grams",
+    "calories",
+    "protein_g",
+    "carbohydrate_g",
+    "fat_g",
+    "fiber_g",
+    "sugars_g",
+    "sodium_mg",
+    "saturated_fat_g",
 )
 
 PLANT_PROTEIN_TERMS = ("bean", "lentil", "fasolada", "chickpea", "gigantes", "hummus", "tofu", "tempeh", "pea")
@@ -216,6 +228,7 @@ def recommend(
         )
         for meal_name in MEAL_NAMES
     ]
+    meals = _align_portions_for_goal(meals, profile, dietary_pattern)
     daily_totals = nutrition_totals([item for meal in meals for item in meal.items])
 
     return RecommendationResult(
@@ -238,6 +251,54 @@ def recommend(
         macro_percentages=_macro_percentages(daily_totals),
         meals=meals,
     )
+
+
+def _align_portions_for_goal(
+    meals: list[MealRecommendation],
+    profile,
+    dietary_pattern: str,
+) -> list[MealRecommendation]:
+    if profile.weight_goal != "lose":
+        return meals
+
+    daily_totals = nutrition_totals([item for meal in meals for item in meal.items])
+    max_calories = profile.daily_targets.calories * 1.08
+    if daily_totals["calories"] <= max_calories:
+        return meals
+
+    factor = max(0.75, min(1.0, (profile.daily_targets.calories * 1.03) / daily_totals["calories"]))
+    scaled_meals = []
+    for meal in meals:
+        items = [_scale_food_record(item, factor) for item in meal.items]
+        totals = nutrition_totals(items)
+        checks = _guidance_checks(items, totals, profile, meal.name, dietary_pattern)
+        scaled_meals.append(
+            replace(
+                meal,
+                items=items,
+                totals=totals,
+                guidance_checks=checks,
+                quality_score=_quality_score(checks, totals, profile, meal.name),
+                explanations=[
+                    *meal.explanations,
+                    "Portions are scaled to stay closer to the selected weight-loss energy target.",
+                ],
+            )
+        )
+    return scaled_meals
+
+
+def _scale_food_record(item: dict[str, Any], factor: float) -> dict[str, Any]:
+    scaled = item.copy()
+    for key in SCALABLE_NUTRIENT_KEYS:
+        scaled[key] = round(float(scaled.get(key, 0) or 0) * factor, 1)
+    scaled["Calories"] = scaled["calories"]
+    scaled["Fats"] = scaled["fat_g"]
+    scaled["Proteins"] = scaled["protein_g"]
+    scaled["Carbohydrates"] = scaled["carbohydrate_g"]
+    scaled["Fibre"] = scaled["fiber_g"]
+    scaled["Sugars"] = scaled["sugars_g"]
+    return scaled
 
 
 def recommend_week(

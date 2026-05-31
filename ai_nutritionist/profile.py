@@ -67,7 +67,7 @@ def build_profile(
     lean_body_mass_kg = _lean_body_mass(weight_kg, body_fat_pct)
     energy_weight = _energy_weight(weight_kg, height_cm, bmi.category_id)
     base_calories = _estimate_energy(energy_weight, height_cm, age, sex, activity)
-    goal, calorie_adjustment = _goal_from_bmi(bmi.category_id, weight_goal)
+    goal, calorie_adjustment = _goal_from_bmi(bmi.category_id, weight_goal, base_calories)
     calories = _clamp_calories(base_calories + calorie_adjustment, sex)
 
     protein_factor = 1.0 if age >= 60 or bmi.category_id in {0, 1, 3, 4} else 0.8
@@ -127,11 +127,11 @@ def _lean_body_mass(weight_kg: float, body_fat_pct: float | None) -> float | Non
     return round(weight_kg * (1 - (body_fat_pct / 100)), 1)
 
 
-def _goal_from_bmi(category_id: int, weight_goal: str = "auto") -> tuple[str, int]:
+def _goal_from_bmi(category_id: int, weight_goal: str = "auto", base_calories: int | None = None) -> tuple[str, int]:
     if weight_goal == "maintain":
         return "maintain weight", 0
     if weight_goal == "lose":
-        return "support gradual weight reduction", -400
+        return "support gradual weight reduction", -_loss_deficit(base_calories or 2200, category_id)
     if weight_goal == "gain":
         return "support gradual weight gain", 250
 
@@ -142,6 +142,13 @@ def _goal_from_bmi(category_id: int, weight_goal: str = "auto") -> tuple[str, in
     if category_id == 3:
         return "support gradual weight reduction", -250
     return "support gradual weight reduction", -400
+
+
+def _loss_deficit(base_calories: int, category_id: int) -> int:
+    lower = 350 if category_id <= 2 else 500
+    upper = 700 if category_id <= 2 else 900
+    target_deficit = round(base_calories * 0.25)
+    return int(max(lower, min(upper, target_deficit)))
 
 
 def _clamp_calories(calories: int, sex: str) -> int:

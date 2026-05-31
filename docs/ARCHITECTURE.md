@@ -1,6 +1,6 @@
 # Architecture
 
-AI Nutritionist is a local-first nutrition recommendation system built around a processed USDA FoodData Central catalog, a curated Mediterranean/Greek extension, deterministic neural ranking, explicit weight-goal controls, weekly rotation, and constraint-based meal assembly.
+AI Nutritionist is a local-first nutrition recommendation system built around a processed USDA FoodData Central catalog, a curated Mediterranean/Greek extension, deterministic neural ranking, explicit weight-goal controls, weekly rotation, local feedback capture, and constraint-based meal assembly.
 
 ## Project Status
 
@@ -8,14 +8,14 @@ This repository is maintained as a standalone public software project. It is not
 
 ## Entry Points
 
-- `app.py`: Streamlit UI for profile input and meal-plan review.
+- `app.py`: Streamlit UI for profile input, meal-plan review, local thumbs feedback, and feedback CSV export.
 - `cli.py`: command-line wrapper for reproducible runs.
 
 ## Package Modules
 
 - `ai_nutritionist.data`: path-safe catalog loading and schema validation.
 - `ai_nutritionist.metrics`: BMI/category logic and legacy macro helpers.
-- `ai_nutritionist.profile`: energy, explicit weight-goal, lean-mass-aware protein, fiber, sodium, saturated-fat, and sugar target estimation.
+- `ai_nutritionist.profile`: energy, bounded explicit weight-goal, lean-mass-aware protein, fiber, sodium, saturated-fat, and sugar target estimation.
 - `ai_nutritionist.scoring`: deterministic weak-label scoring used for model training and fallback ranking.
 - `ai_nutritionist.preferences`: goal-focus parsing, avoid/prefer term handling, and score adjustments.
 - `ai_nutritionist.ranker`: cached neural MLP training and prediction.
@@ -33,9 +33,11 @@ This repository is maintained as a standalone public software project. It is not
 6. The neural ranker trains once per process from weak-supervised labels and is cached.
 7. Candidate foods are filtered by dietary pattern, meal tags, vegan/vegetarian/keto-style rules, meal context, and user avoid terms.
 8. Goal focus, Mediterranean practicality boosts, low-practicality garnish penalties, and preferred terms adjust ranking while the planner still enforces hard guardrails.
-9. The planner assembles each meal from protein, produce, grain/starch, and healthy-fat slots while avoiding repeated food families, repeated dish terms, and guardrail violations.
-10. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, model metadata, and explanations. Internal quality scores remain available for tests and evaluation, but are not shown in the customer-facing UI.
-11. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
+9. Explicit weight-loss targets use a bounded deficit heuristic, then generated meals can be portion-scaled when they sit above the energy target.
+10. The planner assembles each meal from protein, produce, grain/starch, and healthy-fat slots while avoiding repeated food families, repeated dish terms, and guardrail violations.
+11. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, model metadata, and explanations. Internal quality scores remain available for tests and evaluation, but are not shown in the customer-facing UI.
+12. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
+13. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
 
 ## Data Provenance
 
@@ -48,3 +50,5 @@ The model is a scikit-learn `MLPRegressor` trained locally on weak labels derive
 ## Safety Posture
 
 The system provides general wellness nutrition suggestions only. It is not medical advice, does not diagnose or treat conditions, and avoids claims of clinical accuracy.
+
+Feedback is intentionally local-first. The app does not upload feedback, profile data, or generated plans to a remote service.

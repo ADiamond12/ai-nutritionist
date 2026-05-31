@@ -22,6 +22,8 @@ These notes support the current standalone software system. They are not thesis 
 - NIH/National Academies DRI overview: https://ods.od.nih.gov/healthinformation/nutrientrecommendations.aspx
 - American Heart Association Mediterranean diet overview: https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/nutrition-basics/mediterranean-diet
 - Mayo Clinic Mediterranean diet overview: https://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/mediterranean-diet/art-20047801
+- CDC losing weight guidance: https://www.cdc.gov/healthy-weight-growth/losing-weight/index.html
+- Mayo Clinic weight loss strategy overview: https://www.mayoclinic.org/health/weight-loss/HQ01625
 - FAO Greece food-based dietary guidelines summary: https://www.fao.org/nutrition/educacion-nutricional/food-dietary-guidelines/regions/greece/previous-versions-gre/es/
 - NIH vitamin B12 fact sheet: https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/
 - NHS vegan diet overview: https://www.nhs.uk/live-well/eat-well/how-to-eat-a-balanced-diet/the-vegan-diet/
@@ -45,6 +47,12 @@ The planner does not claim that a generated week is clinically optimized. It is 
 ## Weight Goal Handling
 
 `weight_goal` is separate from nutrition focus. `auto` uses the BMI category to choose a conservative energy direction. `maintain`, `lose`, and `gain` let the user explicitly choose the planning direction while preserving calorie floors and safety language. The system does not promise weight loss or gain outcomes.
+
+For explicit `lose`, the project uses a bounded deficit heuristic rather than a flat subtraction. Public guidance commonly frames gradual weight loss around steady behavior change and calorie reduction; CDC describes gradual 1-2 pound-per-week loss as more maintainable, and Mayo Clinic describes creating a daily calorie deficit through intake reduction and activity. The implementation uses a conservative 25% estimated-energy deficit bounded by profile category, then scales generated portions if the plan sits materially above the target. This is a software planning heuristic, not a personalized medical prescription.
+
+## Feedback Handling
+
+The Streamlit feedback feature is a local product signal. Users can mark the full plan or individual meals with thumbs feedback. Negative meal feedback is converted into temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV for review. The app does not upload feedback, profile data, or generated plans.
 
 ## Vegan Handling
 

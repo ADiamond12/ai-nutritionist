@@ -111,3 +111,20 @@ def test_mediterranean_preferred_chicken_can_surface_in_daily_plan():
 
     names = " ".join(item["food_name"].lower() for meal in result.meals for item in meal.items)
     assert "chicken" in names
+
+
+def test_explicit_weight_loss_plan_aligns_portions_to_calorie_target():
+    result = recommend(
+        weight_kg=125,
+        height_cm=200,
+        age=30,
+        sex="male",
+        activity="moderate",
+        dietary_pattern="mediterranean",
+        weight_goal="lose",
+        top_k=4,
+    )
+
+    assert result.daily_targets.calories <= 2600
+    assert result.daily_totals["calories"] <= result.daily_targets.calories * 1.08
+    assert result.daily_totals["protein_g"] >= result.daily_targets.protein_g * 0.85

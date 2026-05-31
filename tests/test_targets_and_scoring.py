@@ -52,6 +52,29 @@ def test_profile_accepts_explicit_weight_goal_over_bmi_default():
     assert lose.daily_targets.calories < maintain.daily_targets.calories < gain.daily_targets.calories
 
 
+def test_explicit_lose_goal_uses_bounded_deficit_for_large_profiles():
+    maintain = build_profile(
+        weight_kg=120,
+        height_cm=205,
+        age=30,
+        sex="male",
+        activity="moderate",
+        weight_goal="maintain",
+    )
+    lose = build_profile(
+        weight_kg=120,
+        height_cm=205,
+        age=30,
+        sex="male",
+        activity="moderate",
+        weight_goal="lose",
+    )
+
+    assert 2500 <= lose.daily_targets.calories <= 2650
+    assert maintain.daily_targets.calories - lose.daily_targets.calories >= 500
+    assert maintain.daily_targets.calories - lose.daily_targets.calories <= 900
+
+
 def test_scoring_prefers_fiber_rich_lower_sodium_foods_when_otherwise_similar():
     foods = pd.DataFrame(
         [
