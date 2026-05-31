@@ -28,7 +28,11 @@ The public version is a standalone software system, not a thesis, dissertation, 
 
 ## Screenshots
 
-Screenshots live under `docs/screenshots/`.
+Screenshots live under `docs/screenshots/` and are kept in the repository so reviewers can understand the app before running Streamlit locally.
+
+| Profile setup | Generated recommendations |
+| --- | --- |
+| ![AI Nutritionist profile setup](docs/screenshots/streamlit-home.png) | ![AI Nutritionist generated recommendations](docs/screenshots/streamlit-recommendations.png) |
 
 Recommended capture flow:
 
