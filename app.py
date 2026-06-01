@@ -64,6 +64,27 @@ FEEDBACK_AVOID_TERMS = (
 
 st.set_page_config(page_title="AI Nutritionist", page_icon="AI", layout="wide")
 
+st.markdown(
+    """
+    <style>
+      #MainMenu,
+      footer,
+      header,
+      [data-testid="stDeployButton"],
+      [data-testid="stToolbar"],
+      [data-testid="stDecoration"],
+      [data-testid="stStatusWidget"],
+      .stDeployButton {
+        display: none !important;
+      }
+      .block-container {
+        padding-top: 3rem;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 @st.cache_data
 def _catalog() -> pd.DataFrame:
