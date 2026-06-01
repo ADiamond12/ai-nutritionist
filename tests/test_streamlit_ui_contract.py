@@ -23,6 +23,7 @@ def test_streamlit_hides_internal_plan_fit_scores_from_customer_ui():
     app_source = _ui_source()
 
     assert "Plan Fit" not in app_source
+    assert "Ranker:" not in app_source
     assert "quality_score" not in app_source
     assert '"neural_score"' not in app_source
 

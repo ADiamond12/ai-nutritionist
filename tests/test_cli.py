@@ -169,3 +169,4 @@ def test_cli_hides_internal_plan_fit_scores_from_user_output(tmp_path):
     assert "PlanFit" not in completed.stdout
     assert "Plan Fit" not in completed.stdout
     assert "Neural:" not in completed.stdout
+    assert "Ranker:" not in completed.stdout
