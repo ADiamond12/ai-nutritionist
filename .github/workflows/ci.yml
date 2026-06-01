@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -e .[dev]
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Run evaluation smoke check
+        run: python -m ai_nutritionist.evaluation
+
+      - name: Run weekly CLI smoke check
+        run: >
+          ai-nutritionist
+          --weight 75
+          --height 180
+          --age 30
+          --sex male
+          --activity moderate
+          --dietary-pattern mediterranean
+          --weight-goal maintain
+          --weekly
+          --top-k 3
+
+      - name: Check for forbidden artifact files
+        shell: bash
+        run: |
+          forbidden_artifact_paths=$(find . -path ./.git -prune -o -path './.venv' -prune -o -path './venv' -prune -o -type f \( -name '.env' -o -name '*.log' -o -name '*.pdf' \) -print)
+          if [ -n "$forbidden_artifact_paths" ]; then
+            echo "forbidden artifact files found:"
+            echo "$forbidden_artifact_paths"
+            exit 1
+          fi

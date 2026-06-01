@@ -8,6 +8,12 @@ This is not a medical or clinical tool. It provides general wellness nutrition s
 
 The public version is a standalone software system, not a thesis, dissertation, or academic submission. It evolved from an earlier recommender prototype into a portfolio-ready application with a reproducible data pipeline, neural ranking, CLI, Streamlit UI, tests, and evaluation notes.
 
+## Public Artifacts
+
+- [MODEL_CARD.md](MODEL_CARD.md) explains the weak-label neural ranker, deterministic guardrails, and non-clinical boundary.
+- [DATA_CARD.md](DATA_CARD.md) explains the USDA/FNDDS-derived catalog, curated Mediterranean extension, and data limitations.
+- [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
+
 ## What It Does
 
 - Calculates BMI and a coarse BMI category from height and weight.

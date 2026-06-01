@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-nutritionist"
+version = "0.4.0"
+description = "Local-first nutrition planning system with deterministic ranking, guardrails, and Streamlit UI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "Arsenios Diamantakos" }
+]
+dependencies = [
+  "pandas>=2.2",
+  "scikit-learn>=1.4",
+  "streamlit>=1.50"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+ai-nutritionist = "ai_nutritionist.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ai_nutritionist*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
