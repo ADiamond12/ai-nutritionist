@@ -30,9 +30,13 @@ The public version is a standalone software system, not a thesis, dissertation, 
 
 Screenshots live under `docs/screenshots/` and are kept in the repository so reviewers can understand the app before running Streamlit locally.
 
-| Profile setup | Generated recommendations |
+| Generated meal plan | Weekly rotation |
 | --- | --- |
-| ![AI Nutritionist profile setup](docs/screenshots/streamlit-home.png) | ![AI Nutritionist generated recommendations](docs/screenshots/streamlit-recommendations.png) |
+| ![AI Nutritionist generated meal plan](docs/screenshots/streamlit-meal-plan.png) | ![AI Nutritionist weekly meal rotation](docs/screenshots/streamlit-weekly-plan.png) |
+
+| Daily nutrition progress | Swap alternatives |
+| --- | --- |
+| ![AI Nutritionist daily nutrition progress](docs/screenshots/streamlit-daily-nutrition.png) | ![AI Nutritionist swap alternatives](docs/screenshots/streamlit-alternatives.png) |
 
 Recommended capture flow:
 
@@ -42,8 +46,11 @@ streamlit run app.py
 
 Open the local Streamlit URL, generate recommendations, and save screenshots as:
 
-- `docs/screenshots/streamlit-home.png`
-- `docs/screenshots/streamlit-recommendations.png`
+- `docs/screenshots/streamlit-meal-plan.png`
+- `docs/screenshots/streamlit-weekly-plan.png`
+- `docs/screenshots/streamlit-daily-nutrition.png`
+- `docs/screenshots/streamlit-alternatives.png`
+- `docs/screenshots/streamlit-mobile-day-detail.png`
 
 ## Setup
 
