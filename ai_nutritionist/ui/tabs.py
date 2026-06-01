@@ -81,7 +81,6 @@ def render_meal_tab(result, weekly_result, context: dict[str, object]):
             kcal_col.metric("Calories", f"{meal.totals['calories']:.0f}")
             protein_col.metric("Protein", f"{meal.totals['protein_g']:.1f}g")
             fiber_col.metric("Fiber", f"{meal.totals['fiber_g']:.1f}g")
-            st.caption(f"Ranker: {meal.model_name}")
             st.dataframe(items_frame(meal.items), hide_index=True, use_container_width=True)
             with st.expander("Why these foods?"):
                 for explanation in meal.explanations:
@@ -175,4 +174,3 @@ def render_data_tab(dietary_label: str) -> None:
     vegan_col.metric("Vegan rows", int(filtered["vegan"].sum()))
     vegetarian_col.metric("Vegetarian rows", int(filtered["vegetarian"].sum()))
     st.dataframe(filtered.head(250), hide_index=True, use_container_width=True)
-

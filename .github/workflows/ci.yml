@@ -26,6 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install -e .[dev]
+          python -m pip check
+
+      - name: Compile package
+        run: python -m py_compile app.py ai_nutritionist/*.py ai_nutritionist/ui/*.py
 
       - name: Run tests
         run: pytest -q
@@ -33,7 +37,7 @@ jobs:
       - name: Run evaluation smoke check
         run: python -m ai_nutritionist.evaluation
 
-      - name: Run weekly CLI smoke check
+      - name: Run daily Mediterranean CLI smoke check
         run: >
           ai-nutritionist
           --weight 75
@@ -42,16 +46,32 @@ jobs:
           --sex male
           --activity moderate
           --dietary-pattern mediterranean
-          --weight-goal maintain
+          --weight-goal lose
+          --top-k 3
+
+      - name: Run weekly Mediterranean CLI smoke check
+        run: >
+          ai-nutritionist
+          --weight 125
+          --height 200
+          --age 30
+          --sex male
+          --activity moderate
+          --dietary-pattern mediterranean
+          --weight-goal lose
           --weekly
           --top-k 3
 
-      - name: Check for forbidden artifact files
+      - name: Check for forbidden artifact files and secret patterns
         shell: bash
         run: |
-          forbidden_artifact_paths=$(find . -path ./.git -prune -o -path './.venv' -prune -o -path './venv' -prune -o -type f \( -name '.env' -o -name '*.log' -o -name '*.pdf' \) -print)
+          forbidden_artifact_paths="$(git ls-files | grep -E '(^|/)(__pycache__|\.pytest_cache|\.idea)(/|$)|(^|/)data/raw(/|$)|(\.env($|\.)|\.pem$|\.key$|\.p12$|\.pfx$|\.pdf$|\.zip$)' || true)"
           if [ -n "$forbidden_artifact_paths" ]; then
-            echo "forbidden artifact files found:"
+            echo "forbidden artifact files or directories found:"
             echo "$forbidden_artifact_paths"
+            exit 1
+          fi
+          if git grep -nE 'AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]+' -- .; then
+            echo "possible secret pattern found"
             exit 1
           fi

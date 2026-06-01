@@ -1,5 +1,10 @@
 # AI Nutritionist
 
+[![CI](https://github.com/ADiamond12/ai-nutritionist/actions/workflows/ci.yml/badge.svg)](https://github.com/ADiamond12/ai-nutritionist/actions/workflows/ci.yml)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Streamlit](https://img.shields.io/badge/streamlit-1.50%2B-red)
+
 AI Nutritionist is a local-first nutrition recommendation system that builds profile-aware daily and weekly meal plans from USDA FoodData Central / FNDDS data plus a curated Mediterranean/Greek food extension. The current version uses an expanded processed catalog, conservative dietary filters, a deterministic neural MLP food ranker, explicit weight-goal controls, and constraint-based meal assembly.
 
 This is not a medical or clinical tool. It provides general wellness nutrition suggestions only and should not be used to diagnose, treat, or manage any health condition.
@@ -13,6 +18,8 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [MODEL_CARD.md](MODEL_CARD.md) explains the weak-label neural ranker, deterministic guardrails, and non-clinical boundary.
 - [DATA_CARD.md](DATA_CARD.md) explains the USDA/FNDDS-derived catalog, curated Mediterranean extension, and data limitations.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
+- [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
 
 ## What It Does
 
@@ -62,9 +69,16 @@ Open the local Streamlit URL, generate recommendations, and save screenshots as:
 
 ```bash
 python -m venv .venv
+
+# Windows PowerShell
 .venv\Scripts\activate
+
+# macOS/Linux
+source .venv/bin/activate
+
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 ## Streamlit Usage
@@ -78,32 +92,34 @@ The Streamlit app requires the user to press `Generate meal plan` before recomme
 ## CLI Usage
 
 ```bash
-python cli.py --weight 75 --height 180 --age 30 --sex male --activity moderate --dietary-pattern mediterranean --weight-goal maintain --top-k 4
+ai-nutritionist --weight 75 --height 180 --age 30 --sex male --activity moderate --dietary-pattern mediterranean --weight-goal maintain --top-k 4
 ```
 
 Preference-aware example:
 
 ```bash
-python cli.py --weight 75 --height 180 --age 30 --goal-focus lower_sodium --avoid "fish,chicken" --prefer "beans" --top-k 4
+ai-nutritionist --weight 75 --height 180 --age 30 --goal-focus lower_sodium --avoid "fish,chicken" --prefer "beans" --top-k 4
 ```
 
 Weekly Mediterranean example:
 
 ```bash
-python cli.py --weight 125 --height 200 --age 30 --sex male --activity moderate --dietary-pattern mediterranean --weight-goal lose --weekly --top-k 3
+ai-nutritionist --weight 125 --height 200 --age 30 --sex male --activity moderate --dietary-pattern mediterranean --weight-goal lose --weekly --top-k 3
 ```
 
 Vegan example:
 
 ```bash
-python cli.py --weight 68 --height 172 --age 32 --sex female --activity moderate --dietary-pattern vegan --top-k 4
+ai-nutritionist --weight 68 --height 172 --age 32 --sex female --activity moderate --dietary-pattern vegan --top-k 4
 ```
 
 Keto-style example:
 
 ```bash
-python cli.py --weight 75 --height 180 --age 30 --dietary-pattern keto_style --body-fat 18 --goal-focus higher_protein --top-k 4
+ai-nutritionist --weight 75 --height 180 --age 30 --dietary-pattern keto_style --body-fat 18 --goal-focus higher_protein --top-k 4
 ```
+
+`python cli.py ...` remains available for direct source-checkout runs.
 
 Options:
 
@@ -122,9 +138,26 @@ Options:
 - `--weekly`: build a weekly plan instead of one day
 - `--days`: number of days for weekly mode, from 1 to 14
 
+## Docker
+
+```bash
+docker build -t ai-nutritionist .
+docker run --rm -p 8501:8501 ai-nutritionist
+```
+
+The container starts Streamlit on `0.0.0.0:8501` and exposes the standard Streamlit health endpoint.
+
+## Deployment Notes
+
+The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
+
+For Streamlit Community Cloud, point the app to `app.py` and install from `requirements.txt`. For Hugging Face Spaces, use a Streamlit Space with `app.py` as the entry point and the committed CSV data files included in the repository. No API keys or private model files are required.
+
 ## Data
 
 The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. The full USDA archive is not committed.
+
+The current combined export contains 2,049 rows: 2,014 USDA/FNDDS-derived rows plus 35 curated Mediterranean/Greek rows. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
 
 Rebuild the processed catalog and Hugging Face-compatible CSV export:
 
@@ -138,7 +171,9 @@ The vegan classifier is conservative: ambiguous mixed dishes are not marked vega
 
 ## Neural Ranking
 
-The project does not claim clinical fine-tuning. Instead, it trains a lightweight neural ranker on weak labels generated from the local USDA catalog: nutrient density, meal fit, sodium, saturated fat, total sugars, processing signal, and BMI-aware energy direction. This gives the project a real trained model while staying honest about the absence of clinical outcome labels.
+The project does not claim clinical fine-tuning. Instead, it trains a lightweight scikit-learn MLP ranker on weak labels generated from the local USDA catalog: nutrient density, meal fit, sodium, saturated fat, total sugars, processing signal, and BMI-aware energy direction. This gives the project a reproducible local ML component while staying honest about the absence of clinical outcome labels.
+
+See [MODEL_CARD.md](MODEL_CARD.md) for model type, weak-label strategy, input features, evaluation boundary, safety posture, and failure modes.
 
 The weekly planner is deterministic orchestration around the same ranker and guardrails. It rotates preference boosts by day so Mediterranean mode can produce practical chicken, fish, legumes, vegetables, whole grains/starches, yogurt, and olive-oil side patterns rather than repeating one high-scoring day.
 
@@ -150,7 +185,7 @@ The project includes an evaluation matrix across underweight, normal, overweight
 python -m ai_nutritionist.evaluation
 ```
 
-See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md).
+See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md). The matrix is a product-quality and guidance-alignment smoke test, not clinical validation.
 
 ## Tests
 
@@ -159,6 +194,12 @@ pytest -q
 ```
 
 Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, local feedback UI contracts, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
+
+## Privacy And Security
+
+Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. Treat exported CSVs as user data and avoid committing them.
+
+Do not enter sensitive medical details, diagnoses, medication information, allergy-critical requirements, or private health records. For security reporting and supported boundaries, see [SECURITY.md](SECURITY.md).
 
 ## Limitations
 

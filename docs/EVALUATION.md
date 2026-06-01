@@ -35,4 +35,4 @@ Summary:
 
 ## Interpretation
 
-The output aligns with broad public-health guidance because each profile receives meals with protein, produce, high-fiber choices, and saturated-fat checks. Some Mediterranean-style profiles exceed strict per-meal sodium allocation while staying inside the daily sodium limit; this is documented rather than hidden. The quality score is an internal guardrail metric for tests and evaluation, not a customer-facing claim of clinical accuracy or medical effectiveness.
+The matrix is a product-quality smoke check for structurally reasonable outputs: each profile receives meals with protein, produce, high-fiber choices, and saturated-fat checks. It is not clinical validation and does not prove health outcomes. Some Mediterranean-style profiles exceed strict per-meal sodium allocation while staying inside the daily sodium limit; this is documented rather than hidden. The quality score is an internal guardrail metric for tests and evaluation, not a customer-facing claim of clinical accuracy, nutrition adequacy, safety, or medical effectiveness.

@@ -123,7 +123,6 @@ def _print_daily_result(
     print(f"Weight goal: {result.preferences['weight_goal']}")
     if body_fat_input is not None:
         print(f"Body fat: {body_fat_input:.1f}%")
-    print(f"Ranker: {result.meals[0].model_name if result.meals else 'Neural MLP food ranker'}")
     print(f"Focus: {result.preferences['goal_focus']}")
     if result.preferences["avoid_terms"]:
         print(f"Avoiding: {', '.join(result.preferences['avoid_terms'])}")
