@@ -13,6 +13,7 @@ def test_system_recommendations_are_structured_meal_plans_with_explanations():
         assert len(meal.items) >= 3
         assert 0 <= meal.quality_score <= 100
         assert meal.explanations
+        assert all("Neural MLP" not in explanation for explanation in meal.explanations)
         groups = {item["food_group"] for item in meal.items}
         assert len(groups) >= 3
         assert meal.totals["calories"] > 0

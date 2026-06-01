@@ -965,7 +965,7 @@ def _explanations(
     groups = sorted({item["food_group"].replace("_", " ") for item in items})
     explanations = [
         f"{meal_name} combines {', '.join(groups)} for meal-level variety.",
-        f"Ranked by the {MODEL_NAME} trained on USDA-derived weak nutrition labels.",
+        "Selected from USDA-derived nutrition signals and profile guardrails.",
     ]
     if dietary_pattern == "vegan":
         explanations.append("Vegan mode uses conservative plant-only flags from category and description rules.")

@@ -17,5 +17,10 @@ dist
 .env.*
 *.log
 *.pdf
+*.zip
+*.pem
+*.key
+*.p12
+*.pfx
 docs/screenshots
 data/raw
