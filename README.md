@@ -21,6 +21,15 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
 - [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
 
+## Reviewer Proof
+
+- **Problem:** meal-planning demos often stop at a recommendation list; this project adds profile-aware constraints, nutrition targets, data cards, model notes, and repeatable tests.
+- **First command:** `streamlit run app.py`
+- **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
+- **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
+- **Validation:** 50 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI smoke tests, and Streamlit smoke testing.
+- **Current limitation:** this is a general wellness software demo, not medical advice or clinical decision support.
+
 ## What It Does
 
 - Calculates BMI and a coarse BMI category from height and weight.
