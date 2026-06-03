@@ -21,7 +21,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Energy goal: auto from BMI, maintain, lose, or gain",
     )
-    parser.add_argument("--body-fat", type=float, default=None, help="Optional body fat percentage for lean-mass protein target")
+    parser.add_argument(
+        "--body-fat",
+        type=float,
+        default=None,
+        help="Optional body fat percentage for lean-mass protein target",
+    )
     parser.add_argument(
         "--goal-focus",
         choices=["balanced", "higher_protein", "higher_fiber", "lighter_meals", "lower_sodium"],
@@ -124,10 +129,12 @@ def _print_daily_result(
     if body_fat_input is not None:
         print(f"Body fat: {body_fat_input:.1f}%")
     print(f"Focus: {result.preferences['goal_focus']}")
-    if result.preferences["avoid_terms"]:
-        print(f"Avoiding: {', '.join(result.preferences['avoid_terms'])}")
-    if result.preferences["preferred_terms"]:
-        print(f"Preferring: {', '.join(result.preferences['preferred_terms'])}")
+    avoid_terms = _preference_terms(result.preferences.get("avoid_terms"))
+    preferred_terms = _preference_terms(result.preferences.get("preferred_terms"))
+    if avoid_terms:
+        print(f"Avoiding: {', '.join(avoid_terms)}")
+    if preferred_terms:
+        print(f"Preferring: {', '.join(preferred_terms)}")
     print(
         "Daily totals -> "
         f"Calories:{result.daily_totals['calories']:.0f} "
@@ -170,6 +177,14 @@ def _print_daily_result(
         if include_items:
             for explanation in meal.explanations:
                 print(f"   Why: {explanation}")
+
+
+def _preference_terms(value: object) -> list[str]:
+    if isinstance(value, (list, tuple, set)):
+        return [str(term) for term in value if str(term).strip()]
+    if value:
+        return [str(value)]
+    return []
 
 
 if __name__ == "__main__":

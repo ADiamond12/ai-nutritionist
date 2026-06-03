@@ -139,7 +139,13 @@ def get_neural_ranker(data_dir: str | None = None) -> NeuralRanker:
     frames = []
     labels = []
     for profile_args in TRAINING_PROFILES:
-        profile = build_profile(**profile_args)
+        profile = build_profile(
+            weight_kg=float(str(profile_args["weight_kg"])),
+            height_cm=float(str(profile_args["height_cm"])),
+            age=int(float(str(profile_args["age"]))),
+            sex=str(profile_args["sex"]),
+            activity=str(profile_args["activity"]),
+        )
         for meal_name in MEAL_NAMES:
             heuristic = score_foods(training_foods, profile, meal_name)
             frames.append(_feature_frame(heuristic, profile, meal_name))

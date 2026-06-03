@@ -17,6 +17,7 @@ def test_streamlit_requires_user_action_before_generating_plan():
 
     assert "Auto-generate" not in app_source
     assert "should_generate = submitted" in app_source
+    assert 'initial_sidebar_state="expanded"' in app_source
 
 
 def test_streamlit_hides_internal_plan_fit_scores_from_customer_ui():
@@ -37,3 +38,12 @@ def test_streamlit_feedback_is_local_and_session_based():
     assert "Download feedback CSV" in app_source
     assert "not uploaded" in app_source
     assert "Regenerate with feedback" in app_source
+
+
+def test_streamlit_exposes_grocery_list_export_without_internal_scores():
+    app_source = _ui_source()
+
+    assert "Grocery List" in app_source
+    assert "Download grocery CSV" in app_source
+    assert "build_grocery_list" in app_source
+    assert "grocery_list_csv" in app_source

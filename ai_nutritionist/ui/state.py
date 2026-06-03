@@ -36,11 +36,16 @@ def variation_terms(dietary_pattern: str, variant: int) -> tuple[str, ...]:
 def feedback_avoid_terms() -> list[str]:
     terms: list[str] = []
     for entry in st.session_state.feedback_log:
+        if not isinstance(entry, dict):
+            continue
         if entry.get("sentiment") != "not_liked":
             continue
-        for term in entry.get("avoid_terms", []):
+        avoid_terms = entry.get("avoid_terms", [])
+        if not isinstance(avoid_terms, (list, tuple, set)):
+            continue
+        for term in avoid_terms:
             if term not in terms:
-                terms.append(term)
+                terms.append(str(term))
     return terms
 
 
@@ -56,4 +61,3 @@ def feedback_csv() -> str:
     if "avoid_terms" in frame.columns:
         frame["avoid_terms"] = frame["avoid_terms"].apply(lambda terms: ", ".join(terms or []))
     return frame.to_csv(index=False)
-

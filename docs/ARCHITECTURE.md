@@ -10,6 +10,7 @@ This repository is maintained as a standalone public software project. It is not
 
 - `app.py`: Streamlit UI for profile input, meal-plan review, local thumbs feedback, and feedback CSV export.
 - `cli.py`: command-line wrapper for reproducible runs.
+- `ai_nutritionist.api`: FastAPI app for public-safe daily/weekly recommendation payloads and optional local feedback experiments.
 
 ## Package Modules
 
@@ -20,6 +21,9 @@ This repository is maintained as a standalone public software project. It is not
 - `ai_nutritionist.preferences`: goal-focus parsing, avoid/prefer term handling, and score adjustments.
 - `ai_nutritionist.ranker`: cached neural MLP training and prediction.
 - `ai_nutritionist.recommender`: dietary filtering, daily and weekly meal assembly, guardrails, quality scoring, alternatives, and explanations.
+- `ai_nutritionist.presentation`: public response serialization that removes internal ranking fields from API-facing payloads.
+- `ai_nutritionist.plan_outputs`: grouped grocery-list builders and CSV export helpers for generated plans.
+- `ai_nutritionist.feedback`: optional local SQLite feedback storage for API experiments.
 - `ai_nutritionist.evaluation`: BMI/age/dietary-pattern evaluation matrix.
 - `ai_nutritionist.cli`: ASCII-safe command-line rendering.
 
@@ -35,9 +39,11 @@ This repository is maintained as a standalone public software project. It is not
 8. Goal focus, Mediterranean practicality boosts, low-practicality garnish penalties, and preferred terms adjust ranking while the planner still enforces hard guardrails.
 9. Explicit weight-loss targets use a bounded deficit heuristic, then generated meals can be portion-scaled when they sit above the energy target.
 10. The planner assembles each meal from protein, produce, grain/starch, and healthy-fat slots while avoiding repeated food families, repeated dish terms, and guardrail violations.
-11. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, model metadata, and explanations. Internal quality scores remain available for tests and evaluation, but are not shown in the customer-facing UI.
+11. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, model metadata, and explanations. Internal quality scores remain available for tests and evaluation, but are not shown in the customer-facing UI or public API payloads.
 12. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
-13. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
+13. `plan_outputs` groups generated daily or weekly items into a grocery list and CSV export.
+14. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
+15. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and can store feedback in an ignored local SQLite database for local experiments.
 
 ## Data Provenance
 
@@ -51,4 +57,4 @@ The model is a scikit-learn `MLPRegressor` trained locally on weak labels derive
 
 The system provides general wellness nutrition suggestions only. It is not medical advice, does not diagnose or treat conditions, and avoids claims of clinical accuracy.
 
-Feedback is intentionally local-first. The app does not upload feedback, profile data, or generated plans to a remote service.
+Feedback is intentionally local-first. The Streamlit app does not upload feedback, profile data, or generated plans to a remote service. The optional API feedback store writes only to a local SQLite path such as `.local/feedback.sqlite`, which is not committed.

@@ -19,6 +19,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [DATA_CARD.md](DATA_CARD.md) explains the USDA/FNDDS-derived catalog, curated Mediterranean extension, and data limitations.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
+- [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md) and [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md) document hosted deployment setup.
 - [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
 
 ## Reviewer Proof
@@ -27,7 +28,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 50 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI smoke tests, and Streamlit smoke testing.
+- **Validation:** 59 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software demo, not medical advice or clinical decision support.
 
 ## What It Does
@@ -46,7 +47,10 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Supports Mediterranean/Greek, omnivore, vegetarian, vegan, and keto-style / low-carb dietary patterns.
 - Builds a 7-day plan option with Mediterranean-style rotation across poultry, fish/seafood, legumes, vegetables, whole grains/starches, and olive-oil sides.
 - Produces meal titles, item-level nutrient totals, macro percentages, daily progress, swap alternatives, local thumbs feedback, and plain-language explanations.
+- Produces grouped grocery lists with CSV export for daily or weekly plans.
+- Exposes a FastAPI app with public-safe daily and weekly recommendation payloads that hide internal ranking scores.
 - Stores feedback only in the current Streamlit session by default; it can be exported as CSV, but it is not uploaded by the app.
+- Supports an optional local SQLite feedback store for API experiments. The default path is `.local/feedback.sqlite`, which is ignored by git.
 
 ## Screenshots
 
@@ -88,6 +92,12 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
+```
+
+For development checks:
+
+```bash
+python -m pip install -e .[dev]
 ```
 
 ## Streamlit Usage
@@ -147,6 +157,22 @@ Options:
 - `--weekly`: build a weekly plan instead of one day
 - `--days`: number of days for weekly mode, from 1 to 14
 
+## API Usage
+
+```bash
+ai-nutritionist-api
+```
+
+The API runs on `http://127.0.0.1:8000` by default. Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
+
+Daily recommendation smoke request:
+
+```bash
+python -c "from fastapi.testclient import TestClient; from ai_nutritionist.api import create_app; c=TestClient(create_app()); print(c.post('/recommend/daily', json={'weight_kg':75,'height_cm':180,'age':30,'sex':'male','dietary_pattern':'mediterranean'}).json()['daily_targets']['calories'])"
+```
+
+The public API response includes plan data, nutrition totals, alternatives, and grocery lists. It intentionally excludes internal model scores and is still a wellness recommender, not medical advice.
+
 ## Docker
 
 ```bash
@@ -160,7 +186,7 @@ The container starts Streamlit on `0.0.0.0:8501` and exposes the standard Stream
 
 The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
 
-For Streamlit Community Cloud, point the app to `app.py` and install from `requirements.txt`. For Hugging Face Spaces, use a Streamlit Space with `app.py` as the entry point and the committed CSV data files included in the repository. No API keys or private model files are required.
+For Streamlit Community Cloud, point the app to `app.py` and install from `requirements.txt`; see [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md). For Hugging Face Spaces, use a Streamlit Space with `app.py` as the entry point and the committed CSV data files included in the repository; see [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md). No API keys or private model files are required.
 
 ## Data
 
@@ -194,19 +220,21 @@ The project includes an evaluation matrix across underweight, normal, overweight
 python -m ai_nutritionist.evaluation
 ```
 
-See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md). The matrix is a product-quality and guidance-alignment smoke test, not clinical validation.
+See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md). The matrix reports calorie-target fit and a transparent constraint-only baseline proxy. It is a product-quality and guidance-alignment smoke test, not clinical validation.
 
 ## Tests
 
 ```bash
+ruff check .
+mypy ai_nutritionist
 pytest -q
 ```
 
-Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, local feedback UI contracts, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
+Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
 
 ## Privacy And Security
 
-Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. Treat exported CSVs as user data and avoid committing them.
+Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. API feedback experiments can use a local SQLite file under `.local/`, which is ignored by git. Treat exported CSVs and local feedback databases as user data and avoid committing them.
 
 Do not enter sensitive medical details, diagnoses, medication information, allergy-critical requirements, or private health records. For security reporting and supported boundaries, see [SECURITY.md](SECURITY.md).
 

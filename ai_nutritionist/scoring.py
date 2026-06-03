@@ -94,5 +94,11 @@ def nutrition_totals(items: list[dict[str, object]]) -> dict[str, float]:
     totals = {key: 0.0 for key in keys}
     for item in items:
         for key in keys:
-            totals[key] += float(item.get(key, 0) or 0)
+            totals[key] += _as_float(item.get(key, 0))
     return {key: round(value, 1) for key, value in totals.items()}
+
+
+def _as_float(value: object) -> float:
+    if value in {None, ""}:
+        return 0.0
+    return float(value)  # type: ignore[arg-type]

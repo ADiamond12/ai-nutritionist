@@ -16,3 +16,8 @@ def test_evaluation_matrix_reports_guidance_alignment_for_bmi_and_age_profiles()
     assert any(row.dietary_pattern == "vegan" for row in report.rows)
     assert any(row.dietary_pattern == "vegetarian" for row in report.rows)
     assert any(row.dietary_pattern == "keto_style" for row in report.rows)
+    assert report.summary["average_calorie_delta_pct"] <= 12
+    assert report.summary["neural_vs_baseline_quality_lift"] >= 0
+    assert all(row.calorie_delta_pct >= 0 for row in report.rows)
+    assert all(row.baseline_quality_score > 0 for row in report.rows)
+    assert all(row.quality_lift >= 0 for row in report.rows)

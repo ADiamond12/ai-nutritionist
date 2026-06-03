@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 import pandas as pd
 
@@ -65,8 +65,14 @@ def macro_totals(items: Iterable[Mapping[str, object]]) -> dict[str, float]:
     totals = {column: 0.0 for column in MACRO_COLUMNS}
     for item in items:
         for column in MACRO_COLUMNS:
-            totals[column] += float(item.get(column, 0) or 0)
+            totals[column] += _as_float(item.get(column, 0))
     return totals
+
+
+def _as_float(value: object) -> float:
+    if value in {None, ""}:
+        return 0.0
+    return float(value)  # type: ignore[arg-type]
 
 
 def filter_foods_by_veg(foods: pd.DataFrame, veg_filter: int) -> pd.DataFrame:

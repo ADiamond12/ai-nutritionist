@@ -16,6 +16,8 @@ def test_project_has_packaging_metadata_and_console_entrypoint():
     assert project["requires-python"] == ">=3.11"
     assert "ai-nutritionist" in project["scripts"]
     assert project["scripts"]["ai-nutritionist"] == "ai_nutritionist.cli:main"
+    assert project["scripts"]["ai-nutritionist-api"] == "ai_nutritionist.api:main"
+    assert any(dependency.startswith("fastapi>=0.115") for dependency in project["dependencies"])
 
 
 def test_repo_has_ci_docker_and_deploy_readiness_files():
@@ -29,6 +31,8 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
 
     workflow_text = workflow.read_text(encoding="utf-8")
     assert "python-version: [\"3.11\", \"3.12\"]" in workflow_text
+    assert "ruff check" in workflow_text
+    assert "mypy ai_nutritionist" in workflow_text
     assert "pytest -q" in workflow_text
     assert "python -m ai_nutritionist.evaluation" in workflow_text
     assert "--weekly" in workflow_text
@@ -37,6 +41,22 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     docker_text = dockerfile.read_text(encoding="utf-8")
     assert "streamlit run app.py" in docker_text
     assert "EXPOSE 8501" in docker_text
+
+
+def test_repo_has_security_and_deployment_automation_files():
+    dependabot = ROOT / ".github" / "dependabot.yml"
+    codeql = ROOT / ".github" / "workflows" / "codeql.yml"
+    streamlit_config = ROOT / ".streamlit" / "config.toml"
+    hf_space = ROOT / "docs" / "deployment" / "huggingface-space-README.md"
+
+    assert dependabot.exists()
+    assert codeql.exists()
+    assert streamlit_config.exists()
+    assert hf_space.exists()
+
+    assert "package-ecosystem: \"pip\"" in dependabot.read_text(encoding="utf-8")
+    assert "github/codeql-action/analyze" in codeql.read_text(encoding="utf-8")
+    assert "sdk: streamlit" in hf_space.read_text(encoding="utf-8")
 
 
 def test_model_and_data_cards_exist_and_are_linked_from_readme():

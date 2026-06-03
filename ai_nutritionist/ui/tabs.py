@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from ai_nutritionist.plan_outputs import build_grocery_list, grocery_list_csv
 from ai_nutritionist.ui.components import catalog, feedback_widget, items_frame, progress_row
 from ai_nutritionist.ui.config import DIETARY_PATTERNS
 from ai_nutritionist.ui.state import feedback_avoid_terms, feedback_csv
@@ -16,7 +17,13 @@ def feedback_context(result, dietary_pattern: str) -> dict[str, object]:
     }
 
 
-def render_profile_tab(result, weekly_result, weight_goal_label: str, focus_label: str, context: dict[str, object]) -> None:
+def render_profile_tab(
+    result,
+    weekly_result,
+    weight_goal_label: str,
+    focus_label: str,
+    context: dict[str, object],
+) -> None:
     bmi_col, category_col, calories_col, goal_col, focus_col = st.columns(5)
     bmi_col.metric("BMI", f"{result.bmi.value:.1f}")
     category_col.metric("BMI category", result.bmi.category_label)
@@ -126,6 +133,25 @@ def render_alternatives_tab(result) -> None:
             for group, alternatives in meal.alternatives.items():
                 st.write(f"**{group.replace('_', ' ').title()}**")
                 st.dataframe(items_frame(alternatives), hide_index=True, use_container_width=True)
+
+
+def render_grocery_tab(result, weekly_result) -> None:
+    st.subheader("Grocery List")
+    source = weekly_result if weekly_result is not None else result
+    grocery_list = build_grocery_list(source)
+    if not grocery_list:
+        st.write("No grocery list available for this plan.")
+        return
+
+    st.caption("Grouped from the generated plan. Quantities are serving estimates, not a clinical prescription.")
+    st.dataframe(pd.DataFrame(grocery_list), hide_index=True, use_container_width=True)
+    st.download_button(
+        "Download grocery CSV",
+        data=grocery_list_csv(grocery_list),
+        file_name="ai_nutritionist_grocery_list.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
 
 
 def render_feedback_tab() -> None:

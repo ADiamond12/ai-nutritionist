@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 
@@ -68,7 +68,10 @@ def apply_preferences(
     adjusted["score"] = adjusted.get("score", 0).astype(float)
     adjusted["score"] += adjusted["preference_match"] * 35
     adjusted["score"] += _focus_adjustment(adjusted, preferences.goal_focus, meal_name)
-    return adjusted.sort_values(["score", "protein_g", "fiber_g"], ascending=[False, False, False]).reset_index(drop=True)
+    return adjusted.sort_values(
+        ["score", "protein_g", "fiber_g"],
+        ascending=[False, False, False],
+    ).reset_index(drop=True)
 
 
 def _parse_terms(value: str | Iterable[str] | None) -> list[str]:

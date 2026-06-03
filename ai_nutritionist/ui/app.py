@@ -1,4 +1,5 @@
 import streamlit as st
+from typing import cast
 
 from ai_nutritionist.constants import SAFETY_DISCLAIMER
 from ai_nutritionist.recommender import recommend, recommend_week
@@ -10,6 +11,7 @@ from ai_nutritionist.ui.tabs import (
     render_alternatives_tab,
     render_data_tab,
     render_feedback_tab,
+    render_grocery_tab,
     render_meal_tab,
     render_nutrition_tab,
     render_profile_tab,
@@ -18,15 +20,22 @@ from ai_nutritionist.ui.tabs import (
 
 
 def run_app() -> None:
-    st.set_page_config(page_title="AI Nutritionist", page_icon="AI", layout="wide")
+    st.set_page_config(
+        page_title="AI Nutritionist",
+        page_icon="AI",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
     hide_streamlit_chrome()
     ensure_session_state()
 
     st.title("AI Nutritionist")
-    st.caption("Interactive USDA-backed planner with a deterministic neural food ranker and preference-aware guardrails.")
+    st.caption(
+        "Interactive USDA-backed planner with a deterministic neural food ranker and preference-aware guardrails."
+    )
     st.warning(SAFETY_DISCLAIMER)
 
-    with st.sidebar:
+    with st.container(border=True):
         profile_inputs = _render_sidebar()
 
     if profile_inputs["should_generate"]:
@@ -87,50 +96,50 @@ def _render_sidebar() -> dict[str, object]:
 
 
 def _generate_plan(inputs: dict[str, object]) -> None:
-    if inputs["regenerate"]:
+    if bool(inputs["regenerate"]):
         st.session_state.plan_variant += 1
     else:
         st.session_state.plan_variant = 0
 
     dietary_pattern = DIETARY_PATTERNS[str(inputs["dietary_label"])]
-    effective_avoid_terms = merge_terms(inputs["avoid_foods"], feedback_avoid_terms())
+    effective_avoid_terms = merge_terms(str(inputs["avoid_foods"]), feedback_avoid_terms())
     effective_preferred_terms = merge_terms(
-        inputs["preferred_foods"],
+        str(inputs["preferred_foods"]),
         variation_terms(dietary_pattern, st.session_state.plan_variant),
     )
 
     with st.spinner("Ranking USDA foods and building the meal plan..."):
         weekly_result = None
-        if inputs["plan_length"] == "Weekly":
+        if str(inputs["plan_length"]) == "Weekly":
             weekly_result = recommend_week(
-                weight_kg=float(inputs["weight"]),
-                height_cm=float(inputs["height"]),
-                age=int(inputs["age"]),
+                weight_kg=_float_input(inputs["weight"]),
+                height_cm=_float_input(inputs["height"]),
+                age=_int_input(inputs["age"]),
                 sex=str(inputs["sex"]),
                 activity=str(inputs["activity"]),
                 dietary_pattern=dietary_pattern,
-                body_fat_pct=inputs["body_fat_pct"],
+                body_fat_pct=_optional_float_input(inputs["body_fat_pct"]),
                 weight_goal=WEIGHT_GOALS[str(inputs["weight_goal_label"])],
                 goal_focus=GOAL_FOCUS[str(inputs["focus_label"])],
                 avoid_terms=effective_avoid_terms,
                 preferred_terms=effective_preferred_terms,
-                top_k=int(inputs["items_per_meal"]),
+                top_k=_int_input(inputs["items_per_meal"]),
             )
             result = weekly_result.days[0].result
         else:
             result = recommend(
-                weight_kg=float(inputs["weight"]),
-                height_cm=float(inputs["height"]),
-                age=int(inputs["age"]),
+                weight_kg=_float_input(inputs["weight"]),
+                height_cm=_float_input(inputs["height"]),
+                age=_int_input(inputs["age"]),
                 sex=str(inputs["sex"]),
                 activity=str(inputs["activity"]),
                 dietary_pattern=dietary_pattern,
-                body_fat_pct=inputs["body_fat_pct"],
+                body_fat_pct=_optional_float_input(inputs["body_fat_pct"]),
                 weight_goal=WEIGHT_GOALS[str(inputs["weight_goal_label"])],
                 goal_focus=GOAL_FOCUS[str(inputs["focus_label"])],
                 avoid_terms=effective_avoid_terms,
                 preferred_terms=effective_preferred_terms,
-                top_k=int(inputs["items_per_meal"]),
+                top_k=_int_input(inputs["items_per_meal"]),
             )
 
     st.session_state.last_plan = {
@@ -172,12 +181,30 @@ def _render_plan_state() -> None:
         )
 
     if weekly_result is not None:
-        profile_tab, weekly_tab, meal_tab, nutrition_tab, alternatives_tab, feedback_tab, data_tab = st.tabs(
-            ["Profile", "Weekly Plan", "Day Detail", "Daily Nutrition", "Alternatives", "Feedback", "Data Explorer"]
+        (
+            profile_tab,
+            weekly_tab,
+            meal_tab,
+            nutrition_tab,
+            alternatives_tab,
+            grocery_tab,
+            feedback_tab,
+            data_tab,
+        ) = st.tabs(
+            [
+                "Profile",
+                "Weekly Plan",
+                "Day Detail",
+                "Daily Nutrition",
+                "Alternatives",
+                "Grocery List",
+                "Feedback",
+                "Data Explorer",
+            ]
         )
     else:
-        profile_tab, meal_tab, nutrition_tab, alternatives_tab, feedback_tab, data_tab = st.tabs(
-            ["Profile", "Meal Plan", "Daily Nutrition", "Alternatives", "Feedback", "Data Explorer"]
+        profile_tab, meal_tab, nutrition_tab, alternatives_tab, grocery_tab, feedback_tab, data_tab = st.tabs(
+            ["Profile", "Meal Plan", "Daily Nutrition", "Alternatives", "Grocery List", "Feedback", "Data Explorer"]
         )
 
     with profile_tab:
@@ -191,8 +218,23 @@ def _render_plan_state() -> None:
         render_nutrition_tab(result)
     with alternatives_tab:
         render_alternatives_tab(result)
+    with grocery_tab:
+        render_grocery_tab(result, weekly_result)
     with feedback_tab:
         render_feedback_tab()
     with data_tab:
         render_data_tab(dietary_label)
 
+
+def _float_input(value: object) -> float:
+    return float(cast(str | int | float, value))
+
+
+def _int_input(value: object) -> int:
+    return int(cast(str | int | float, value))
+
+
+def _optional_float_input(value: object) -> float | None:
+    if value is None:
+        return None
+    return _float_input(value)

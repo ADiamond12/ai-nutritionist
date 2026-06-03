@@ -258,18 +258,36 @@ def _align_portions_for_goal(
     profile,
     dietary_pattern: str,
 ) -> list[MealRecommendation]:
-    if profile.weight_goal != "lose":
-        return meals
-
     daily_totals = nutrition_totals([item for meal in meals for item in meal.items])
-    max_calories = profile.daily_targets.calories * 1.08
-    if daily_totals["calories"] <= max_calories:
+    target_calories = max(float(profile.daily_targets.calories), 1.0)
+    actual_calories = float(daily_totals["calories"])
+    is_reduction_goal = profile.weight_goal == "lose" or "weight reduction" in profile.profile_goal
+    is_gain_goal = profile.weight_goal == "gain" or "weight gain" in profile.profile_goal
+
+    factor = 1.0
+    if is_reduction_goal and actual_calories > target_calories * 1.08:
+        factor = (target_calories * 1.03) / actual_calories
+    elif not is_gain_goal and actual_calories > target_calories * 1.12:
+        factor = (target_calories * 1.06) / actual_calories
+    elif actual_calories < target_calories * 0.88:
+        upward_alignment = 0.86 if dietary_pattern == "keto_style" else 0.90
+        factor = (target_calories * upward_alignment) / actual_calories
+
+    factor = max(0.72, min(1.60, factor))
+    if abs(factor - 1.0) < 0.01:
         return meals
 
-    factor = max(0.75, min(1.0, (profile.daily_targets.calories * 1.03) / daily_totals["calories"]))
+    if factor < 1:
+        alignment_note = "Portions are scaled to stay closer to the selected weight-reduction energy target."
+    else:
+        alignment_note = "Portions are scaled to stay closer to the estimated daily energy target."
+
     scaled_meals = []
     for meal in meals:
         items = [_scale_food_record(item, factor) for item in meal.items]
+        if dietary_pattern == "keto_style":
+            items = _trim_keto_meal_carbs(items, meal.name)
+            items = _trim_keto_meal_saturated_fat(items, profile, meal.name)
         totals = nutrition_totals(items)
         checks = _guidance_checks(items, totals, profile, meal.name, dietary_pattern)
         scaled_meals.append(
@@ -281,7 +299,7 @@ def _align_portions_for_goal(
                 quality_score=_quality_score(checks, totals, profile, meal.name),
                 explanations=[
                     *meal.explanations,
-                    "Portions are scaled to stay closer to the selected weight-loss energy target.",
+                    alignment_note,
                 ],
             )
         )
@@ -299,6 +317,56 @@ def _scale_food_record(item: dict[str, Any], factor: float) -> dict[str, Any]:
     scaled["Fibre"] = scaled["fiber_g"]
     scaled["Sugars"] = scaled["sugars_g"]
     return scaled
+
+
+def _trim_keto_meal_carbs(items: list[dict[str, Any]], meal_name: str) -> list[dict[str, Any]]:
+    limit = _carbohydrate_limit("keto_style", meal_name)
+    totals = nutrition_totals(items)
+    if totals["carbohydrate_g"] <= limit:
+        return items
+
+    trimmed = [item.copy() for item in items]
+    carb_order = sorted(
+        range(len(trimmed)),
+        key=lambda index: float(trimmed[index].get("carbohydrate_g", 0) or 0),
+        reverse=True,
+    )
+    for index in carb_order:
+        totals = nutrition_totals(trimmed)
+        excess_carbs = totals["carbohydrate_g"] - limit
+        if excess_carbs <= 0:
+            break
+        item_carbs = float(trimmed[index].get("carbohydrate_g", 0) or 0)
+        if item_carbs <= 0:
+            continue
+        reduction = min(0.35, (excess_carbs / item_carbs) + 0.02)
+        trimmed[index] = _scale_food_record(trimmed[index], 1 - reduction)
+    return trimmed
+
+
+def _trim_keto_meal_saturated_fat(items: list[dict[str, Any]], profile, meal_name: str) -> list[dict[str, Any]]:
+    limit = meal_target(profile, meal_name).saturated_fat_g_limit
+    totals = nutrition_totals(items)
+    if totals["saturated_fat_g"] <= limit:
+        return items
+
+    trimmed = [item.copy() for item in items]
+    saturated_fat_order = sorted(
+        range(len(trimmed)),
+        key=lambda index: float(trimmed[index].get("saturated_fat_g", 0) or 0),
+        reverse=True,
+    )
+    for index in saturated_fat_order:
+        totals = nutrition_totals(trimmed)
+        excess_saturated_fat = totals["saturated_fat_g"] - limit
+        if excess_saturated_fat <= 0:
+            break
+        item_saturated_fat = float(trimmed[index].get("saturated_fat_g", 0) or 0)
+        if item_saturated_fat <= 0:
+            continue
+        reduction = min(0.30, (excess_saturated_fat / item_saturated_fat) + 0.02)
+        trimmed[index] = _scale_food_record(trimmed[index], 1 - reduction)
+    return trimmed
 
 
 def recommend_week(
@@ -353,7 +421,7 @@ def recommend_week(
     return WeeklyRecommendationResult(
         system_name=SYSTEM_NAME,
         dietary_pattern=dietary_pattern,
-        weight_goal=planned_days[0].result.preferences["weight_goal"],
+        weight_goal=str(planned_days[0].result.preferences["weight_goal"]),
         nutrition_focus=goal_focus,
         days=planned_days,
         weekly_totals=weekly_totals,
@@ -466,7 +534,7 @@ def _build_meal(
         data_dir=str(data_dir) if data_dir is not None else None,
     )
     scored = apply_preferences(scored, preferences, meal_name=meal_name)
-    selected_rows = []
+    selected_rows: list[pd.Series] = []
     meal_used_fdc_ids: set[int] = set()
 
     blueprints = KETO_STYLE_BLUEPRINTS if dietary_pattern == "keto_style" else MEAL_BLUEPRINTS
@@ -889,7 +957,10 @@ def _prioritize_keto_rows(rows: pd.DataFrame, group: str) -> pd.DataFrame:
     )
     if group == "protein":
         ranked.loc[ranked["food_name"].map(_is_common_omnivore_protein), "keto_fit_score"] += 4
-    return ranked.sort_values(["keto_fit_score", "score", "fiber_g"], ascending=[False, False, False]).reset_index(drop=True)
+    return ranked.sort_values(
+        ["keto_fit_score", "score", "fiber_g"],
+        ascending=[False, False, False],
+    ).reset_index(drop=True)
 
 
 def _has_keto_exclusion(food_name: object) -> bool:

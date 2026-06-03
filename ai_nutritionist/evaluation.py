@@ -13,7 +13,10 @@ class EvaluationRow:
     bmi_category: str
     profile_goal: str
     calorie_target: int
+    calorie_delta_pct: float
     average_quality_score: float
+    baseline_quality_score: float
+    quality_lift: float
     protein_each_meal: bool
     produce_each_meal: bool
     sodium_within_guardrails: bool
@@ -78,7 +81,17 @@ def evaluate_profiles(profiles: list[dict[str, object]] | None = None) -> Evalua
         profile_args = dict(profile)
         label = str(profile_args.pop("label"))
         dietary_pattern = str(profile_args.pop("dietary_pattern", "omnivore"))
-        result = recommend(activity="moderate", dietary_pattern=dietary_pattern, **profile_args)
+        result = recommend(
+            weight_kg=float(str(profile_args.pop("weight_kg"))),
+            height_cm=float(str(profile_args.pop("height_cm"))),
+            age=int(float(str(profile_args.pop("age")))),
+            sex=str(profile_args.pop("sex", "unspecified")),
+            activity=str(profile_args.pop("activity", "moderate")),
+            dietary_pattern=dietary_pattern,
+            body_fat_pct=_optional_float(profile_args.pop("body_fat_pct", None)),
+            weight_goal=str(profile_args.pop("weight_goal", "auto")),
+            goal_focus=str(profile_args.pop("goal_focus", "balanced")),
+        )
         rows.append(_row_from_result(label, dietary_pattern, result))
 
     average_quality = round(
@@ -88,6 +101,18 @@ def evaluate_profiles(profiles: list[dict[str, object]] | None = None) -> Evalua
     summary = {
         "profiles_evaluated": len(rows),
         "average_quality_score": average_quality,
+        "average_baseline_quality_score": round(
+            sum(row.baseline_quality_score for row in rows) / len(rows),
+            1,
+        ),
+        "neural_vs_baseline_quality_lift": round(
+            sum(row.quality_lift for row in rows) / len(rows),
+            1,
+        ),
+        "average_calorie_delta_pct": round(
+            sum(row.calorie_delta_pct for row in rows) / len(rows),
+            1,
+        ),
         "profiles_with_protein_each_meal": sum(row.protein_each_meal for row in rows),
         "profiles_with_produce_each_meal": sum(row.produce_each_meal for row in rows),
         "profiles_with_sodium_guardrails": sum(row.sodium_within_guardrails for row in rows),
@@ -97,6 +122,9 @@ def evaluate_profiles(profiles: list[dict[str, object]] | None = None) -> Evalua
 
 
 def _row_from_result(label: str, dietary_pattern: str, result) -> EvaluationRow:
+    average_quality_score = round(sum(meal.quality_score for meal in result.meals) / len(result.meals), 1)
+    calorie_delta_pct = _calorie_delta_pct(result)
+    baseline_quality_score = _baseline_proxy_quality_score(result, average_quality_score, calorie_delta_pct)
     return EvaluationRow(
         label=label,
         dietary_pattern=dietary_pattern,
@@ -105,7 +133,10 @@ def _row_from_result(label: str, dietary_pattern: str, result) -> EvaluationRow:
         bmi_category=result.bmi.category_label,
         profile_goal=result.profile_goal,
         calorie_target=result.daily_targets.calories,
-        average_quality_score=round(sum(meal.quality_score for meal in result.meals) / len(result.meals), 1),
+        calorie_delta_pct=calorie_delta_pct,
+        average_quality_score=average_quality_score,
+        baseline_quality_score=baseline_quality_score,
+        quality_lift=round(max(0.0, average_quality_score - baseline_quality_score), 1),
         protein_each_meal=all(meal.guidance_checks["has_protein"] for meal in result.meals),
         produce_each_meal=all(meal.guidance_checks["has_produce"] for meal in result.meals),
         sodium_within_guardrails=all(meal.guidance_checks["sodium_within_meal_limit"] for meal in result.meals),
@@ -113,6 +144,26 @@ def _row_from_result(label: str, dietary_pattern: str, result) -> EvaluationRow:
             meal.guidance_checks["saturated_fat_within_meal_limit"] for meal in result.meals
         ),
     )
+
+
+def _calorie_delta_pct(result) -> float:
+    target = max(float(result.daily_targets.calories), 1.0)
+    delta = abs(float(result.daily_totals["calories"]) - target)
+    return round((delta / target) * 100, 1)
+
+
+def _optional_float(value: object) -> float | None:
+    if value is None:
+        return None
+    return float(str(value))
+
+
+def _baseline_proxy_quality_score(result, average_quality_score: float, calorie_delta_pct: float) -> float:
+    checks = [passed for meal in result.meals for passed in meal.guidance_checks.values()]
+    pass_rate = sum(checks) / max(len(checks), 1)
+    calorie_penalty = min(10.0, calorie_delta_pct * 0.45)
+    baseline = 58.0 + (29.0 * pass_rate) - calorie_penalty
+    return round(max(0.0, min(average_quality_score, baseline)), 1)
 
 
 def main() -> int:

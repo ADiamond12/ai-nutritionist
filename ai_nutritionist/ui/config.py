@@ -1,4 +1,4 @@
-DIETARY_PATTERNS = {
+DIETARY_PATTERNS: dict[str, str] = {
     "Mediterranean / Greek": "mediterranean",
     "Omnivore": "omnivore",
     "Vegetarian": "vegetarian",
@@ -6,7 +6,7 @@ DIETARY_PATTERNS = {
     "Keto-style / low carb": "keto_style",
 }
 
-GOAL_FOCUS = {
+GOAL_FOCUS: dict[str, str] = {
     "Balanced": "balanced",
     "Higher protein": "higher_protein",
     "Higher fiber": "higher_fiber",
@@ -14,14 +14,14 @@ GOAL_FOCUS = {
     "Lower sodium": "lower_sodium",
 }
 
-WEIGHT_GOALS = {
+WEIGHT_GOALS: dict[str, str] = {
     "Auto from BMI": "auto",
     "Maintain weight": "maintain",
     "Lose weight": "lose",
     "Gain weight": "gain",
 }
 
-PLAN_VARIATIONS = {
+PLAN_VARIATIONS: dict[str, list[tuple[str, ...]]] = {
     "mediterranean": [
         ("chicken", "souvlaki"),
         ("salmon", "fish"),
@@ -52,4 +52,3 @@ FEEDBACK_AVOID_TERMS = (
     "turkey",
     "tofu",
 )
-

@@ -42,6 +42,8 @@ The data is not suitable for clinical dietetics, allergy safety, micronutrient s
 
 The runtime loader validates required columns, converts numeric and boolean fields, and merges the Mediterranean extension when present. Tests cover schema shape, catalog variety, dietary filters, meal tags, source distribution, recommendation output shape, and evaluation behavior.
 
+Generated grocery lists are derived from recommendation outputs at runtime. They are not a separate dataset and are not committed unless a reviewer intentionally creates sample artifacts.
+
 ## Known Limitations
 
 - Some USDA nutrient values come from broad food descriptions rather than exact recipes.
@@ -52,4 +54,4 @@ The runtime loader validates required columns, converts numeric and boolean fiel
 
 ## Privacy And Licensing Posture
 
-No personally identifiable information is included in the committed datasets. The full USDA archive is intentionally omitted. User feedback CSV exports are separate local user data and should not be committed.
+No personally identifiable information is included in the committed datasets. The full USDA archive is intentionally omitted. User feedback CSV exports and optional local SQLite feedback databases are separate local user data and should not be committed.

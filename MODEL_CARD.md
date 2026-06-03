@@ -34,6 +34,8 @@ The model uses a scikit-learn MLP regressor with hidden layers `(32, 16)`, ReLU 
 
 The planner combines the neural score with deterministic heuristic scoring, preference boosts, avoid-term filters, dietary-pattern filters, meal-slot rules, and guardrails for calories, sodium, saturated fat, sugars, protein, fiber, and food-family repetition. The neural ranker does not produce final meal plans by itself.
 
+Customer-facing Streamlit and API payloads intentionally hide internal quality, neural, and heuristic scores. Those values are retained for tests and evaluation only.
+
 ## Evaluation
 
 The repository includes tests and a 9-profile evaluation matrix:
@@ -42,11 +44,11 @@ The repository includes tests and a 9-profile evaluation matrix:
 python -m ai_nutritionist.evaluation
 ```
 
-This evaluation checks product behavior and guidance-alignment signals such as protein presence, produce presence, sodium guardrails, saturated-fat guardrails, and internal quality scores. It is not clinical validation and should not be read as evidence of medical accuracy.
+This evaluation checks product behavior and guidance-alignment signals such as protein presence, produce presence, calorie-target delta, sodium guardrails, saturated-fat guardrails, a constraint-only baseline proxy, and internal quality scores. It is not clinical validation and should not be read as evidence of medical accuracy.
 
 ## Privacy And Security
 
-The model trains from committed public/sample catalog rows. Streamlit feedback is session-local unless the user exports it as CSV. Exported feedback is user data and should not be committed.
+The model trains from committed public/sample catalog rows. Streamlit feedback is session-local unless the user exports it as CSV. API feedback experiments can write to an ignored local SQLite database. Exported feedback and local feedback databases are user data and should not be committed.
 
 ## Limitations And Failure Modes
 
