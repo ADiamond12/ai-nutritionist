@@ -1,5 +1,12 @@
 from dataclasses import dataclass
 
+from ai_nutritionist.guidelines import (
+    GENERAL_FIBER_TARGET_G,
+    MALE_FIBER_TARGET_G,
+    SATURATED_FAT_MAX_ENERGY_PCT,
+    SODIUM_LIMIT_MG,
+    SUGAR_REFERENCE_ENERGY_PCT,
+)
 from ai_nutritionist.metrics import BMIResult, calculate_bmi
 
 
@@ -74,10 +81,10 @@ def build_profile(
     protein_g = max(50.0, round(weight_kg * protein_factor, 1))
     if lean_body_mass_kg is not None:
         protein_g = max(protein_g, round(lean_body_mass_kg * 1.6, 1))
-    fiber_g = 30.0 if sex == "male" and age < 50 else 25.0
-    sodium_limit = 2300.0
-    saturated_fat_limit = round((calories * 0.10) / 9, 1)
-    sugars_limit = round((calories * 0.10) / 4, 1)
+    fiber_g = MALE_FIBER_TARGET_G if sex == "male" and age < 50 else GENERAL_FIBER_TARGET_G
+    sodium_limit = SODIUM_LIMIT_MG
+    saturated_fat_limit = round((calories * (SATURATED_FAT_MAX_ENERGY_PCT / 100)) / 9, 1)
+    sugars_limit = round((calories * (SUGAR_REFERENCE_ENERGY_PCT / 100)) / 4, 1)
 
     return NutritionProfile(
         weight_kg=weight_kg,

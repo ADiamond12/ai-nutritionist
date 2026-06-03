@@ -17,6 +17,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 
 - [MODEL_CARD.md](MODEL_CARD.md) explains the weak-label neural ranker, deterministic guardrails, and non-clinical boundary.
 - [DATA_CARD.md](DATA_CARD.md) explains the USDA/FNDDS-derived catalog, curated Mediterranean extension, and data limitations.
+- [docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md) maps public nutrition guidance to code-level guardrails and caveats.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
 - [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md) and [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md) document hosted deployment setup.
@@ -28,7 +29,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 59 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 62 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software demo, not medical advice or clinical decision support.
 
 ## What It Does
@@ -208,7 +209,7 @@ The vegan classifier is conservative: ambiguous mixed dishes are not marked vega
 
 The project does not claim clinical fine-tuning. Instead, it trains a lightweight scikit-learn MLP ranker on weak labels generated from the local USDA catalog: nutrient density, meal fit, sodium, saturated fat, total sugars, processing signal, and BMI-aware energy direction. This gives the project a reproducible local ML component while staying honest about the absence of clinical outcome labels.
 
-See [MODEL_CARD.md](MODEL_CARD.md) for model type, weak-label strategy, input features, evaluation boundary, safety posture, and failure modes.
+See [MODEL_CARD.md](MODEL_CARD.md) for model type, weak-label strategy, input features, evaluation boundary, safety posture, and failure modes. See [docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md) for how public nutrition guidance is translated into software guardrails without claiming clinical validation.
 
 The weekly planner is deterministic orchestration around the same ranker and guardrails. It rotates preference boosts by day so Mediterranean mode can produce practical chicken, fish, legumes, vegetables, whole grains/starches, yogurt, and olive-oil side patterns rather than repeating one high-scoring day.
 

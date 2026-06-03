@@ -63,13 +63,17 @@ def test_model_and_data_cards_exist_and_are_linked_from_readme():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     model_card = (ROOT / "MODEL_CARD.md").read_text(encoding="utf-8")
     data_card = (ROOT / "DATA_CARD.md").read_text(encoding="utf-8")
+    guideline_alignment = (ROOT / "docs" / "GUIDELINE_ALIGNMENT.md").read_text(encoding="utf-8")
 
     assert "[MODEL_CARD.md](MODEL_CARD.md)" in readme
     assert "[DATA_CARD.md](DATA_CARD.md)" in readme
+    assert "[docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md)" in readme
     assert "weak labels" in model_card.lower()
     assert "not clinical" in model_card.lower()
     assert "USDA FoodData Central" in data_card
     assert "curated Mediterranean" in data_card
+    assert "not a clinical nutrition system" in guideline_alignment
+    assert "WHO healthy diet" in guideline_alignment
 
 
 def test_streamlit_entrypoint_is_thin_and_ui_modules_exist():

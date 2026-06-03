@@ -4,6 +4,8 @@
 
 AI Nutritionist uses a local scikit-learn `MLPRegressor` as a food-ranking component inside a deterministic meal planner. The model helps rank catalog rows for general wellness meal assembly. It is not clinical, does not diagnose, and does not treat or manage health conditions.
 
+The source-backed nutrition guardrails are centralized in `ai_nutritionist/guidelines.py` and documented in `docs/GUIDELINE_ALIGNMENT.md`. Those guardrails are product constraints, not clinical validation.
+
 ## Intended Use
 
 The ranker is intended for local food ordering inside the CLI and Streamlit app. It supports profile-aware meal assembly across Mediterranean/Greek, omnivore, vegetarian, vegan, and keto-style/low-carb modes.

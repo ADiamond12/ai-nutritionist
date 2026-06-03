@@ -28,6 +28,8 @@ These notes support the current standalone software system. They are not thesis 
 - NIH vitamin B12 fact sheet: https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/
 - NHS vegan diet overview: https://www.nhs.uk/live-well/eat-well/how-to-eat-a-balanced-diet/the-vegan-diet/
 
+See `docs/GUIDELINE_ALIGNMENT.md` for the implementation map that connects these sources to target constants, meal-level checks, evaluation fields, and caveats.
+
 ## Neural Ranking Approach
 
 The project uses a local scikit-learn `MLPRegressor` as a neural food ranker. The ranker is trained on weak labels generated from USDA nutrients and guidance-alignment rules. This is intentionally not described as clinical fine-tuning because the repository does not include registered-dietitian labels, clinical outcomes, allergies, medical history, medication interactions, or disease-state targets.
