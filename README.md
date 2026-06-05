@@ -74,6 +74,7 @@ streamlit run app.py
 Open the local Streamlit URL and use a public-safe reviewer profile:
 
 - Daily screenshots: default 75 kg, 180 cm, age 30, Mediterranean / Greek, balanced focus, 4 items per meal.
+- Preference fields: avoid `chicken, walnuts`; prefer `beans, berries, oats`.
 - Weekly screenshot: switch `Plan length` to `Weekly`, keep Mediterranean / Greek, then generate.
 - Mobile screenshot: capture the generated `Day Detail` tab at a phone-sized viewport.
 - Screenshot safety check: refresh any screenshot that shows `Plan Fit`, `Ranker:`, `quality_score`, or `neural_score`.
@@ -125,7 +126,7 @@ ai-nutritionist --weight 75 --height 180 --age 30 --sex male --activity moderate
 Preference-aware example:
 
 ```bash
-ai-nutritionist --weight 75 --height 180 --age 30 --goal-focus lower_sodium --avoid "fish,chicken" --prefer "beans" --top-k 4
+ai-nutritionist --weight 75 --height 180 --age 30 --goal-focus lower_sodium --avoid "chicken,walnuts" --prefer "beans" --top-k 4
 ```
 
 Weekly Mediterranean example:

@@ -21,6 +21,7 @@ streamlit run app.py
 Recommended reviewer profile:
 
 - Daily screenshots: default 75 kg, 180 cm, age 30, Mediterranean / Greek, balanced focus, 4 items per meal.
+- Preference fields: avoid `chicken, walnuts`; prefer `beans, berries, oats`.
 - Weekly screenshot: switch `Plan length` to `Weekly`, keep Mediterranean / Greek, then generate.
 - Mobile screenshot: capture the generated `Day Detail` tab at a phone-sized viewport.
 - Public-safety check: screenshots must not show `Plan Fit`, `Ranker:`, `quality_score`, or `neural_score`.

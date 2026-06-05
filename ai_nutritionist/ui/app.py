@@ -64,8 +64,8 @@ def _render_sidebar() -> dict[str, object]:
     items_per_meal = st.slider("Items per meal", min_value=3, max_value=5, value=4)
 
     with st.expander("Preferences", expanded=True):
-        avoid_foods = st.text_input("Avoid foods", placeholder="fish, chicken, nuts")
-        preferred_foods = st.text_input("Prefer foods", placeholder="salmon, beans, berries")
+        avoid_foods = st.text_input("Avoid foods", placeholder="chicken, walnuts")
+        preferred_foods = st.text_input("Prefer foods", placeholder="beans, berries, oats")
         st.caption("Separate terms with commas. Matching is conservative substring matching on USDA food names.")
 
     submitted = st.button("Generate meal plan", type="primary", use_container_width=True)

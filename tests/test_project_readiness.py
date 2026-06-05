@@ -80,9 +80,14 @@ def test_model_and_data_cards_exist_and_are_linked_from_readme():
 
 def test_streamlit_entrypoint_is_thin_and_ui_modules_exist():
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    ui_source = (ROOT / "ai_nutritionist" / "ui" / "app.py").read_text(encoding="utf-8")
 
     assert "from ai_nutritionist.ui.app import run_app" in app_source
     assert len(app_source.splitlines()) <= 5
+    assert "chicken, walnuts" in ui_source
+    assert "beans, berries, oats" in ui_source
+    assert "fish, chicken, nuts" not in ui_source
+    assert "salmon, beans, berries" not in ui_source
 
     expected_modules = [
         "ai_nutritionist/ui/app.py",
@@ -118,6 +123,10 @@ def test_public_screenshot_artifacts_and_refresh_guidance_are_current():
         assert path.name in screenshot_readme
 
     assert "default 75 kg, 180 cm, age 30" in screenshot_readme
+    assert "chicken, walnuts" in screenshot_readme
+    assert "beans, berries, oats" in screenshot_readme
+    assert "avoid `fish" not in screenshot_readme.lower()
+    assert "prefer `salmon" not in screenshot_readme.lower()
     assert "Plan Fit" in screenshot_readme
     assert "Ranker:" in screenshot_readme
     assert "quality_score" in screenshot_readme
