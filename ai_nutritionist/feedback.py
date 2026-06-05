@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from collections.abc import Iterable
+from contextlib import closing
 import csv
 import json
 import sqlite3
@@ -44,7 +45,7 @@ class FeedbackStore:
 
     def add(self, entry: FeedbackEntry) -> int:
         normalized = entry.normalized()
-        with sqlite3.connect(self.path) as connection:
+        with closing(sqlite3.connect(self.path)) as connection:
             connection.execute(
                 """
                 INSERT INTO feedback
@@ -62,10 +63,10 @@ class FeedbackStore:
                 ),
             )
             connection.commit()
-            return self.count()
+            return int(connection.execute("SELECT COUNT(*) FROM feedback").fetchone()[0])
 
     def list_entries(self) -> list[FeedbackEntry]:
-        with sqlite3.connect(self.path) as connection:
+        with closing(sqlite3.connect(self.path)) as connection:
             rows = connection.execute(
                 """
                 SELECT timestamp_utc, scope, label, sentiment, dietary_pattern, weight_goal, avoid_terms_json
@@ -87,7 +88,7 @@ class FeedbackStore:
         ]
 
     def count(self) -> int:
-        with sqlite3.connect(self.path) as connection:
+        with closing(sqlite3.connect(self.path)) as connection:
             return int(connection.execute("SELECT COUNT(*) FROM feedback").fetchone()[0])
 
     def to_csv(self, entries: Iterable[FeedbackEntry] | None = None) -> str:
@@ -110,7 +111,7 @@ class FeedbackStore:
         return output.getvalue()
 
     def _initialize(self) -> None:
-        with sqlite3.connect(self.path) as connection:
+        with closing(sqlite3.connect(self.path)) as connection:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS feedback (

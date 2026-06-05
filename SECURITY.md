@@ -14,11 +14,11 @@ Do not include sensitive health, medical, or personal data in reports. This proj
 
 The Streamlit feedback controls store thumbs feedback in the current local session only. The app does not upload feedback, profile inputs, or generated meal plans. If a user exports the feedback CSV, that file should be treated as user-controlled local data and should not be committed if it contains personal notes or profile details.
 
-The FastAPI feedback endpoint is intended for local experiments. By default it writes to `.local/feedback.sqlite`, or to `AI_NUTRITIONIST_FEEDBACK_DB` if explicitly configured. `.local/`, `.env` files, exported feedback, private keys, PDFs, ZIP archives, cache directories, and raw data archives must not be committed.
+The FastAPI feedback endpoint is intended for local experiments. The feedback store is initialized lazily only when `/feedback` is used; health, OpenAPI, and recommendation endpoints do not create persistent feedback storage. By default feedback writes to `.local/feedback.sqlite`, or to `AI_NUTRITIONIST_FEEDBACK_DB` if explicitly configured. `.local/`, `.env` files, exported feedback, private keys, PDFs, ZIP archives, cache directories, and raw data archives must not be committed.
 
 ## API Boundary
 
-The API returns public-safe recommendation payloads and omits internal neural, heuristic, and quality scores. It does not provide authentication, persistence, or user management. Do not expose it as a production public service without adding rate limiting, privacy policy, retention rules, and abuse controls.
+The API returns public-safe recommendation payloads and omits internal neural, heuristic, and quality scores. It does not provide authentication or user management, and its only persistence path is the optional local feedback endpoint described above. Do not expose it as a production public service without adding rate limiting, privacy policy, retention rules, and abuse controls.
 
 ## Safety Scope
 

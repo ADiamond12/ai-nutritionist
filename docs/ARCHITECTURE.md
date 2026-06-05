@@ -43,7 +43,7 @@ This repository is maintained as a standalone public software project. It is not
 12. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
 13. `plan_outputs` groups generated daily or weekly items into a grocery list and CSV export.
 14. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
-15. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and can store feedback in an ignored local SQLite database for local experiments.
+15. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and initializes the ignored local SQLite feedback store only when local feedback endpoints are used.
 
 ## Data Provenance
 
@@ -57,4 +57,4 @@ The model is a scikit-learn `MLPRegressor` trained locally on weak labels derive
 
 The system provides general wellness nutrition suggestions only. It is not medical advice, does not diagnose or treat conditions, and avoids claims of clinical accuracy.
 
-Feedback is intentionally local-first. The Streamlit app does not upload feedback, profile data, or generated plans to a remote service. The optional API feedback store writes only to a local SQLite path such as `.local/feedback.sqlite`, which is not committed.
+Feedback is intentionally local-first. The Streamlit app does not upload feedback, profile data, or generated plans to a remote service. The optional API feedback store is created lazily from feedback endpoints and writes only to a local SQLite path such as `.local/feedback.sqlite`, which is not committed.

@@ -29,8 +29,8 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 62 pytest tests, Docker health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
-- **Current limitation:** this is a general wellness software demo, not medical advice or clinical decision support.
+- **Validation:** 68 pytest tests, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
 
@@ -51,7 +51,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Produces grouped grocery lists with CSV export for daily or weekly plans.
 - Exposes a FastAPI app with public-safe daily and weekly recommendation payloads that hide internal ranking scores.
 - Stores feedback only in the current Streamlit session by default; it can be exported as CSV, but it is not uploaded by the app.
-- Supports an optional local SQLite feedback store for API experiments. The default path is `.local/feedback.sqlite`, which is ignored by git.
+- Supports an optional local SQLite feedback store for API experiments. The store is initialized only when feedback endpoints are used; the default path is `.local/feedback.sqlite`, which is ignored by git.
 
 ## Screenshots
 
@@ -71,7 +71,14 @@ Recommended capture flow:
 streamlit run app.py
 ```
 
-Open the local Streamlit URL, generate recommendations, and save screenshots as:
+Open the local Streamlit URL and use a public-safe reviewer profile:
+
+- Daily screenshots: default 75 kg, 180 cm, age 30, Mediterranean / Greek, balanced focus, 4 items per meal.
+- Weekly screenshot: switch `Plan length` to `Weekly`, keep Mediterranean / Greek, then generate.
+- Mobile screenshot: capture the generated `Day Detail` tab at a phone-sized viewport.
+- Screenshot safety check: refresh any screenshot that shows `Plan Fit`, `Ranker:`, `quality_score`, or `neural_score`.
+
+Save screenshots as:
 
 - `docs/screenshots/streamlit-meal-plan.png`
 - `docs/screenshots/streamlit-weekly-plan.png`
@@ -181,7 +188,11 @@ docker build -t ai-nutritionist .
 docker run --rm -p 8501:8501 ai-nutritionist
 ```
 
-The container starts Streamlit on `0.0.0.0:8501` and exposes the standard Streamlit health endpoint.
+The container starts Streamlit on `0.0.0.0:8501`, includes a Dockerfile `HEALTHCHECK`, and exposes the standard Streamlit health endpoint:
+
+```bash
+python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health').read().decode())"
+```
 
 ## Deployment Notes
 
@@ -235,7 +246,7 @@ Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss
 
 ## Privacy And Security
 
-Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. API feedback experiments can use a local SQLite file under `.local/`, which is ignored by git. Treat exported CSVs and local feedback databases as user data and avoid committing them.
+Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. API feedback experiments can use a local SQLite file under `.local/`, which is initialized only when the feedback endpoints are used and ignored by git. Treat exported CSVs and local feedback databases as user data and avoid committing them.
 
 Do not enter sensitive medical details, diagnoses, medication information, allergy-critical requirements, or private health records. For security reporting and supported boundaries, see [SECURITY.md](SECURITY.md).
 

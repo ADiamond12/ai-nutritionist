@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Lock
 from typing import Any, Literal
 import os
 
@@ -48,7 +49,19 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
         summary="Profile-aware wellness meal planner API",
         version="0.5.0",
     )
-    store = FeedbackStore(feedback_db_path or _default_feedback_db_path())
+    resolved_feedback_db_path = (
+        Path(feedback_db_path) if feedback_db_path is not None else _default_feedback_db_path()
+    ).resolve()
+    store: FeedbackStore | None = None
+    store_lock = Lock()
+
+    def feedback_store() -> FeedbackStore:
+        nonlocal store
+        if store is None:
+            with store_lock:
+                if store is None:
+                    store = FeedbackStore(resolved_feedback_db_path)
+        return store
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -68,12 +81,12 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
 
     @app.post("/feedback", status_code=201)
     def create_feedback(request: FeedbackRequest) -> dict[str, Any]:
-        count = store.add(FeedbackEntry(**request.model_dump()))
+        count = feedback_store().add(FeedbackEntry(**request.model_dump()))
         return {"stored": True, "count": count}
 
     @app.get("/feedback")
     def list_feedback() -> dict[str, Any]:
-        entries = store.list_entries()
+        entries = feedback_store().list_entries()
         return {"count": len(entries), "entries": [entry.__dict__ for entry in entries]}
 
     return app

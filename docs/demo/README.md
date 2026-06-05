@@ -10,7 +10,7 @@ Use this storyboard for a short public-safe walkthrough of the benchmark project
 4. Show the daily nutrition progress panel to explain constraints and targets.
 5. Switch to the weekly rotation view to show the planner can create a broader schedule.
 6. Open swap alternatives to show the app is not a static report.
-7. Close with the boundary: local-first software demo, general wellness only, no medical claims.
+7. Close with the boundary: local-first software system, general wellness only, no medical claims.
 
 ## Screenshots To Capture
 

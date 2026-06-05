@@ -41,6 +41,8 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     docker_text = dockerfile.read_text(encoding="utf-8")
     assert "streamlit run app.py" in docker_text
     assert "EXPOSE 8501" in docker_text
+    assert "HEALTHCHECK" in docker_text
+    assert "_stcore/health" in docker_text
 
 
 def test_repo_has_security_and_deployment_automation_files():
@@ -91,3 +93,32 @@ def test_streamlit_entrypoint_is_thin_and_ui_modules_exist():
     ]
     for module in expected_modules:
         assert (ROOT / module).exists()
+
+
+def test_public_screenshot_artifacts_and_refresh_guidance_are_current():
+    screenshot_dir = ROOT / "docs" / "screenshots"
+    screenshot_readme = (screenshot_dir / "README.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    expected_screenshots = [
+        "streamlit-meal-plan.png",
+        "streamlit-weekly-plan.png",
+        "streamlit-daily-nutrition.png",
+        "streamlit-alternatives.png",
+        "streamlit-mobile-day-detail.png",
+    ]
+    for filename in expected_screenshots:
+        path = screenshot_dir / filename
+        assert path.exists()
+        assert path.stat().st_size > 10_000
+        assert filename in screenshot_readme
+        assert filename in readme
+
+    for path in screenshot_dir.glob("*.png"):
+        assert path.name in screenshot_readme
+
+    assert "default 75 kg, 180 cm, age 30" in screenshot_readme
+    assert "Plan Fit" in screenshot_readme
+    assert "Ranker:" in screenshot_readme
+    assert "quality_score" in screenshot_readme
+    assert "neural_score" in screenshot_readme
