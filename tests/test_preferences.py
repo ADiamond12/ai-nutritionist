@@ -83,6 +83,26 @@ def test_goal_focus_updates_ranking_and_daily_progress():
     assert lower_sodium.daily_totals["sodium_mg"] <= balanced.daily_totals["sodium_mg"]
 
 
+def test_hybrid_v2_preserves_goal_focus_intent_during_complete_day_optimization():
+    common = {
+        "weight_kg": 75,
+        "height_cm": 180,
+        "age": 30,
+        "sex": "male",
+        "activity": "moderate",
+        "dietary_pattern": "omnivore",
+        "top_k": 4,
+    }
+    balanced = recommend(**common, goal_focus="balanced")
+    higher_protein = recommend(**common, goal_focus="higher_protein")
+    higher_fiber = recommend(**common, goal_focus="higher_fiber")
+    lighter_meals = recommend(**common, goal_focus="lighter_meals")
+
+    assert higher_protein.daily_totals["protein_g"] >= balanced.daily_totals["protein_g"]
+    assert higher_fiber.daily_totals["fiber_g"] >= balanced.daily_totals["fiber_g"]
+    assert lighter_meals.daily_totals["calories"] <= balanced.daily_totals["calories"]
+
+
 def test_meal_alternatives_are_grouped_and_exclude_selected_items():
     result = recommend(weight_kg=75, height_cm=180, age=30, sex="male", activity="moderate", top_k=4)
 

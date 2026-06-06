@@ -36,6 +36,7 @@ def test_cli_smoke_runs_from_another_working_directory_with_ascii_output(tmp_pat
     assert "AI Nutritionist recommendation system" in completed.stdout
     assert "not medical advice" in completed.stdout.lower()
     assert "Totals ->" in completed.stdout
+    assert "Planner: hybrid_v2" in completed.stdout
 
 
 def test_cli_accepts_focus_and_preference_flags(tmp_path):

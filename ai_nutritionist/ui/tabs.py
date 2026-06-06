@@ -31,6 +31,17 @@ def render_profile_tab(
     goal_col.metric("Weight goal", weight_goal_label)
     focus_col.metric("Nutrition focus", focus_label)
     st.write(f"Profile goal: {result.profile_goal}")
+    planner_label = (
+        "Planner: Hybrid V2"
+        if result.planner_summary.planner_mode == "hybrid_v2"
+        else "Planner: Legacy baseline"
+    )
+    st.caption(
+        f"{planner_label} | Substitutions: {result.planner_summary.substitutions} | "
+        f"Portion adjustments: {result.planner_summary.portion_adjustments}"
+    )
+    if result.planner_summary.remaining_constraints:
+        st.info("Remaining planning notes: " + "; ".join(result.planner_summary.remaining_constraints))
     if weekly_result is not None:
         st.caption(
             f"Weekly mode uses {len(weekly_result.days)} daily plans with Mediterranean-style protein rotation "
@@ -74,7 +85,7 @@ def render_weekly_tab(weekly_result) -> None:
                     metric_cols[0].metric("Calories", f"{meal.totals['calories']:.0f}")
                     metric_cols[1].metric("Protein", f"{meal.totals['protein_g']:.1f}g")
                     metric_cols[2].metric("Fiber", f"{meal.totals['fiber_g']:.1f}g")
-                    st.dataframe(items_frame(meal.items), hide_index=True, use_container_width=True)
+                    st.dataframe(items_frame(meal.items), hide_index=True, width="stretch")
 
 
 def render_meal_tab(result, weekly_result, context: dict[str, object]):
@@ -88,14 +99,14 @@ def render_meal_tab(result, weekly_result, context: dict[str, object]):
             kcal_col.metric("Calories", f"{meal.totals['calories']:.0f}")
             protein_col.metric("Protein", f"{meal.totals['protein_g']:.1f}g")
             fiber_col.metric("Fiber", f"{meal.totals['fiber_g']:.1f}g")
-            st.dataframe(items_frame(meal.items), hide_index=True, use_container_width=True)
+            st.dataframe(items_frame(meal.items), hide_index=True, width="stretch")
             with st.expander("Why these foods?"):
                 for explanation in meal.explanations:
                     st.write(f"- {explanation}")
             with st.expander("Swap options"):
                 for group, alternatives in meal.alternatives.items():
                     st.write(f"**{group.replace('_', ' ').title()}**")
-                    st.dataframe(items_frame(alternatives[:2]), hide_index=True, use_container_width=True)
+                    st.dataframe(items_frame(alternatives[:2]), hide_index=True, width="stretch")
             feedback_widget(
                 scope="meal",
                 label=meal.name,
@@ -123,7 +134,7 @@ def render_nutrition_tab(result) -> None:
     with right:
         progress_row("Sodium", totals["sodium_mg"], targets.sodium_mg_limit, "mg", limit=True)
         progress_row("Saturated fat", totals["saturated_fat_g"], targets.saturated_fat_g_limit, "g", limit=True)
-    st.dataframe(pd.DataFrame([totals]), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame([totals]), hide_index=True, width="stretch")
 
 
 def render_alternatives_tab(result) -> None:
@@ -132,7 +143,7 @@ def render_alternatives_tab(result) -> None:
         with st.expander(meal.name, expanded=meal.name == "Breakfast"):
             for group, alternatives in meal.alternatives.items():
                 st.write(f"**{group.replace('_', ' ').title()}**")
-                st.dataframe(items_frame(alternatives), hide_index=True, use_container_width=True)
+                st.dataframe(items_frame(alternatives), hide_index=True, width="stretch")
 
 
 def render_grocery_tab(result, weekly_result) -> None:
@@ -144,13 +155,13 @@ def render_grocery_tab(result, weekly_result) -> None:
         return
 
     st.caption("Grouped from the generated plan. Quantities are serving estimates, not a clinical prescription.")
-    st.dataframe(pd.DataFrame(grocery_list), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(grocery_list), hide_index=True, width="stretch")
     st.download_button(
         "Download grocery CSV",
         data=grocery_list_csv(grocery_list),
         file_name="ai_nutritionist_grocery_list.csv",
         mime="text/csv",
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -158,13 +169,13 @@ def render_feedback_tab() -> None:
     st.subheader("Feedback")
     st.caption("Feedback is stored only in this local Streamlit session and is not uploaded.")
     if st.session_state.feedback_log:
-        st.dataframe(pd.DataFrame(st.session_state.feedback_log), hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame(st.session_state.feedback_log), hide_index=True, width="stretch")
         st.download_button(
             "Download feedback CSV",
             data=feedback_csv(),
             file_name="ai_nutritionist_feedback.csv",
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
         if feedback_avoid_terms():
             st.info("Negative feedback will be used as local avoid terms when you click Regenerate with feedback.")
@@ -199,4 +210,4 @@ def render_data_tab(dietary_label: str) -> None:
     count_col.metric("Foods shown", len(filtered))
     vegan_col.metric("Vegan rows", int(filtered["vegan"].sum()))
     vegetarian_col.metric("Vegetarian rows", int(filtered["vegetarian"].sum()))
-    st.dataframe(filtered.head(250), hide_index=True, use_container_width=True)
+    st.dataframe(filtered.head(250), hide_index=True, width="stretch")

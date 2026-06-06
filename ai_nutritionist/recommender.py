@@ -7,6 +7,11 @@ import pandas as pd
 from ai_nutritionist.constants import MEAL_NAMES, SAFETY_DISCLAIMER, SYSTEM_NAME
 from ai_nutritionist.data import load_food_catalog
 from ai_nutritionist.metrics import BMIResult
+from ai_nutritionist.optimizer import (
+    OptimizableMeal,
+    PlanOptimizationSummary,
+    optimize_daily_plan,
+)
 from ai_nutritionist.preferences import RecommendationPreferences, apply_preferences, build_preferences
 from ai_nutritionist.profile import DailyTargets, build_profile
 from ai_nutritionist.ranker import MODEL_NAME, rank_foods_with_neural_model
@@ -136,6 +141,7 @@ class RecommendationResult:
     daily_totals: dict[str, float]
     daily_progress: dict[str, float]
     macro_percentages: dict[str, float]
+    planner_summary: PlanOptimizationSummary
     meals: list[MealRecommendation]
 
     def to_dict(self) -> dict[str, Any]:
@@ -182,11 +188,14 @@ def recommend(
     top_k: int = 4,
     veg_filter: int = -1,
     data_dir: Path | str | None = None,
+    planner_mode: str = "hybrid_v2",
 ) -> RecommendationResult:
     if top_k < 3:
         top_k = 3
     if dietary_pattern not in {"mediterranean", "omnivore", "vegetarian", "vegan", "keto_style"}:
         raise ValueError("dietary_pattern must be mediterranean, omnivore, vegetarian, vegan, or keto_style")
+    if planner_mode not in {"legacy", "hybrid_v2"}:
+        raise ValueError("planner_mode must be legacy or hybrid_v2")
 
     profile = build_profile(
         weight_kg=weight_kg,
@@ -229,6 +238,15 @@ def recommend(
         for meal_name in MEAL_NAMES
     ]
     meals = _align_portions_for_goal(meals, profile, dietary_pattern)
+    planner_summary = PlanOptimizationSummary(
+        planner_mode="legacy",
+        optimized=False,
+        substitutions=0,
+        portion_adjustments=0,
+        remaining_constraints=(),
+    )
+    if planner_mode == "hybrid_v2":
+        meals, planner_summary = _optimize_meals(meals, profile, dietary_pattern, preferences.goal_focus)
     daily_totals = nutrition_totals([item for meal in meals for item in meal.items])
 
     return RecommendationResult(
@@ -249,8 +267,63 @@ def recommend(
         daily_totals=daily_totals,
         daily_progress=_daily_progress(daily_totals, profile.daily_targets),
         macro_percentages=_macro_percentages(daily_totals),
+        planner_summary=planner_summary,
         meals=meals,
     )
+
+
+def _optimize_meals(meals: list[MealRecommendation], profile, dietary_pattern: str, goal_focus: str):
+    optimized = optimize_daily_plan(
+        [
+            OptimizableMeal(
+                name=meal.name,
+                items=meal.items,
+                alternatives=meal.alternatives,
+            )
+            for meal in meals
+        ],
+        profile.daily_targets,
+        {meal.name: meal_target(profile, meal.name) for meal in meals},
+        dietary_pattern,
+        goal_focus,
+    )
+    selected_ids = {
+        int(item["fdc_id"])
+        for optimized_meal in optimized.meals
+        for item in optimized_meal.items
+    }
+    rebuilt = []
+    for meal, optimized_meal in zip(meals, optimized.meals):
+        items = optimized_meal.items
+        totals = nutrition_totals(items)
+        checks = _guidance_checks(items, totals, profile, meal.name, dietary_pattern)
+        explanations = _explanations(items, checks, meal.name, dietary_pattern)
+        if optimized.summary.optimized:
+            explanations.append("Hybrid planning balanced the complete day across nutrition targets and guardrails.")
+        rebuilt.append(
+            replace(
+                meal,
+                title=_meal_title(meal.name, items, dietary_pattern),
+                items=items,
+                totals=totals,
+                quality_score=_quality_score(checks, totals, profile, meal.name),
+                guidance_checks=checks,
+                explanations=explanations,
+                alternatives=_exclude_selected_alternatives(meal.alternatives, selected_ids),
+            )
+        )
+    return rebuilt, optimized.summary
+
+
+def _exclude_selected_alternatives(
+    alternatives: dict[str, list[dict[str, Any]]],
+    selected_ids: set[int],
+) -> dict[str, list[dict[str, Any]]]:
+    return {
+        group: [item for item in items if int(item["fdc_id"]) not in selected_ids]
+        for group, items in alternatives.items()
+        if any(int(item["fdc_id"]) not in selected_ids for item in items)
+    }
 
 
 def _align_portions_for_goal(
@@ -386,6 +459,7 @@ def recommend_week(
     veg_filter: int = -1,
     data_dir: Path | str | None = None,
     days: int = 7,
+    planner_mode: str = "hybrid_v2",
 ) -> WeeklyRecommendationResult:
     if days < 1 or days > 14:
         raise ValueError("days must be between 1 and 14")
@@ -411,6 +485,7 @@ def recommend_week(
             top_k=top_k,
             veg_filter=veg_filter,
             data_dir=data_dir,
+            planner_mode=planner_mode,
         )
         planned_days.append(
             WeeklyDayRecommendation(day_name=day_name, rotation_focus=rotation_focus, result=result)

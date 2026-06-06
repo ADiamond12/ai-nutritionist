@@ -1,6 +1,6 @@
 # Architecture
 
-AI Nutritionist is a local-first nutrition recommendation system built around a processed USDA FoodData Central catalog, a curated Mediterranean/Greek extension, deterministic neural ranking, explicit weight-goal controls, weekly rotation, local feedback capture, and constraint-based meal assembly.
+AI Nutritionist is a local-first nutrition recommendation system built around a processed USDA FoodData Central catalog, a curated Mediterranean/Greek extension, deterministic neural ranking, Hybrid V2 complete-day optimization, explicit weight-goal controls, weekly rotation, local feedback capture, and guarded meal assembly.
 
 ## Project Status
 
@@ -21,6 +21,7 @@ This repository is maintained as a standalone public software project. It is not
 - `ai_nutritionist.preferences`: goal-focus parsing, avoid/prefer term handling, and score adjustments.
 - `ai_nutritionist.ranker`: cached neural MLP training and prediction.
 - `ai_nutritionist.recommender`: dietary filtering, daily and weekly meal assembly, guardrails, quality scoring, alternatives, and explanations.
+- `ai_nutritionist.optimizer`: deterministic complete-day optimization, bounded substitutions/portions, hard-limit preservation, and public-safe planning notes.
 - `ai_nutritionist.presentation`: public response serialization that removes internal ranking fields from API-facing payloads.
 - `ai_nutritionist.plan_outputs`: grouped grocery-list builders and CSV export helpers for generated plans.
 - `ai_nutritionist.feedback`: optional local SQLite feedback storage for API experiments.
@@ -39,11 +40,12 @@ This repository is maintained as a standalone public software project. It is not
 8. Goal focus, Mediterranean practicality boosts, low-practicality garnish penalties, and preferred terms adjust ranking while the planner still enforces hard guardrails.
 9. Explicit weight-loss targets use a bounded deficit heuristic, then generated meals can be portion-scaled when they sit above the energy target.
 10. The planner assembles each meal from protein, produce, grain/starch, and healthy-fat slots while avoiding repeated food families, repeated dish terms, and guardrail violations.
-11. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, model metadata, and explanations. Internal quality scores remain available for tests and evaluation, but are not shown in the customer-facing UI or public API payloads.
-12. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
-13. `plan_outputs` groups generated daily or weekly items into a grocery list and CSV export.
-14. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
-15. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and initializes the ignored local SQLite feedback store only when local feedback endpoints are used.
+11. Hybrid V2 evaluates the complete daily plan and performs deterministic, bounded same-group substitutions and portion adjustments. It preserves already-passing hard limits and accepts only objective-improving changes.
+12. Daily mode returns structured items, daily totals, macro percentages, progress metrics, grouped alternatives, planner diagnostics, and explanations. Internal ranking and optimization scores are not shown in the customer-facing UI or public API payloads.
+13. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
+14. `plan_outputs` groups generated daily or weekly catalog items into a grocery list and CSV export.
+15. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
+16. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and initializes the ignored local SQLite feedback store only when local feedback endpoints are used.
 
 ## Data Provenance
 
@@ -52,6 +54,12 @@ This repository is maintained as a standalone public software project. It is not
 ## Neural Model
 
 The model is a scikit-learn `MLPRegressor` trained locally on weak labels derived from public nutrient data and guidance-alignment rules. This is a real neural model, but it is not clinical fine-tuning and is not trained on patient outcomes.
+
+## Hybrid V2 Planner
+
+The default planner retains the neural ranker as candidate generation and adds deterministic coordinate-search optimization across the assembled day. The legacy planner remains selectable for paired evaluation. The optimizer is a software heuristic, not clinical optimization.
+
+Current catalog rows can represent atomic foods, components, or opaque prepared dishes. The planner treats them as plate compositions; it does not claim ingredient-level recipe decomposition.
 
 ## Safety Posture
 

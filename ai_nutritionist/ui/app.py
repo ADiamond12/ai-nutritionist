@@ -68,10 +68,10 @@ def _render_sidebar() -> dict[str, object]:
         preferred_foods = st.text_input("Prefer foods", placeholder="beans, berries, oats")
         st.caption("Separate terms with commas. Matching is conservative substring matching on USDA food names.")
 
-    submitted = st.button("Generate meal plan", type="primary", use_container_width=True)
+    submitted = st.button("Generate meal plan", type="primary", width="stretch")
     regenerate = False
     if st.session_state.last_plan is not None:
-        regenerate = st.button("Regenerate with feedback", use_container_width=True)
+        regenerate = st.button("Regenerate with feedback", width="stretch")
         if feedback_avoid_terms():
             st.caption("Uses disliked meals from this local session as avoid signals.")
 

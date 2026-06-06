@@ -129,3 +129,70 @@ def test_explicit_weight_loss_plan_aligns_portions_to_calorie_target():
     assert result.daily_targets.calories <= 2600
     assert result.daily_totals["calories"] <= result.daily_targets.calories * 1.08
     assert result.daily_totals["protein_g"] >= result.daily_targets.protein_g * 0.85
+
+
+def test_hybrid_v2_is_default_and_is_deterministic():
+    first = recommend(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        dietary_pattern="mediterranean",
+    )
+    second = recommend(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        dietary_pattern="mediterranean",
+    )
+
+    assert first.planner_summary.planner_mode == "hybrid_v2"
+    assert first.to_dict() == second.to_dict()
+
+
+def test_legacy_planner_remains_available_as_a_benchmark_baseline():
+    result = recommend(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        dietary_pattern="mediterranean",
+        planner_mode="legacy",
+    )
+
+    assert result.planner_summary.planner_mode == "legacy"
+    assert not result.planner_summary.optimized
+    assert result.planner_summary.substitutions == 0
+    assert result.planner_summary.portion_adjustments == 0
+
+
+def test_hybrid_v2_preserves_vegan_filter_after_optimization():
+    result = recommend(
+        weight_kg=68,
+        height_cm=172,
+        age=32,
+        sex="female",
+        dietary_pattern="vegan",
+        planner_mode="hybrid_v2",
+    )
+
+    assert all(item["vegan"] for meal in result.meals for item in meal.items)
+
+
+def test_hybrid_v2_swap_options_do_not_repeat_selected_items():
+    result = recommend(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        dietary_pattern="mediterranean",
+    )
+    selected_ids = {item["fdc_id"] for meal in result.meals for item in meal.items}
+
+    assert all(
+        alternative["fdc_id"] not in selected_ids
+        for meal in result.meals
+        for alternatives in meal.alternatives.values()
+        for alternative in alternatives
+    )

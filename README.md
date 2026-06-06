@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.50%2B-red)
 
-AI Nutritionist is a local-first nutrition recommendation system that builds profile-aware daily and weekly meal plans from USDA FoodData Central / FNDDS data plus a curated Mediterranean/Greek food extension. The current version uses an expanded processed catalog, conservative dietary filters, a deterministic neural MLP food ranker, explicit weight-goal controls, and constraint-based meal assembly.
+AI Nutritionist is a local-first nutrition recommendation system that builds profile-aware daily and weekly meal plans from USDA FoodData Central / FNDDS data plus a curated Mediterranean/Greek food extension. The current version combines a deterministic neural MLP food ranker, guarded meal assembly, and a Hybrid V2 optimizer that improves the complete daily plan across calorie fit, nutrition targets, and guardrails.
 
 This is not a medical or clinical tool. It provides general wellness nutrition suggestions only and should not be used to diagnose, treat, or manage any health condition.
 
@@ -19,6 +19,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [DATA_CARD.md](DATA_CARD.md) explains the USDA/FNDDS-derived catalog, curated Mediterranean extension, and data limitations.
 - [docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md) maps public nutrition guidance to code-level guardrails and caveats.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
+- [docs/HYBRID_RECOMMENDER_V2.md](docs/HYBRID_RECOMMENDER_V2.md) explains complete-day optimization, hard-limit preservation, and paired benchmark evidence.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
 - [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md) and [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md) document hosted deployment setup.
 - [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
@@ -29,7 +30,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 68 pytest tests, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 87 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -43,6 +44,8 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Adds a curated Mediterranean/Greek extension with practical foods such as Greek yogurt bowls, dakos-style toast, lentil soup, fasolada, chickpea salads, grilled fish, horta, Greek salads, and olive-oil vegetable sides.
 - Trains a deterministic `MLPRegressor` ranker on weak-supervised nutrition-quality labels derived from USDA nutrients and public-health guidance.
 - Combines neural ranking with hard meal guardrails for calories, sodium, saturated fat, sugars, and food-family repetition.
+- Runs deterministic Hybrid V2 complete-day optimization with bounded same-group substitutions and portion adjustments.
+- Keeps the legacy planner available as an explicit benchmark baseline rather than using an invented comparison score.
 - Supports nutrition focus modes: balanced, higher protein, higher fiber, lighter meals, and lower sodium.
 - Supports avoid/prefer terms so users can steer recommendations without making medical claims.
 - Supports Mediterranean/Greek, omnivore, vegetarian, vegan, and keto-style / low-carb dietary patterns.
@@ -165,6 +168,7 @@ Options:
 - `--top-k` / `--topk`: number of foods per meal, minimum 3
 - `--weekly`: build a weekly plan instead of one day
 - `--days`: number of days for weekly mode, from 1 to 14
+- `--planner-mode`: `hybrid_v2` by default, or `legacy` for paired benchmark reproduction
 
 ## API Usage
 
@@ -227,13 +231,13 @@ The weekly planner is deterministic orchestration around the same ranker and gua
 
 ## Evaluation
 
-The project includes an evaluation matrix across underweight, normal, overweight, severely overweight, older-adult, Mediterranean, vegetarian, vegan, and keto-style profiles.
+The project includes an evaluation matrix across underweight, normal, overweight, severely overweight, older-adult, Mediterranean, vegetarian, vegan, and keto-style profiles. It also runs the same profiles through the legacy and Hybrid V2 planners for a paired engineering comparison.
 
 ```bash
 python -m ai_nutritionist.evaluation
 ```
 
-See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md). The matrix reports calorie-target fit and a transparent constraint-only baseline proxy. It is a product-quality and guidance-alignment smoke test, not clinical validation.
+See [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/RESEARCH.md](docs/RESEARCH.md). The paired benchmark reports calorie-target fit, meal and daily sodium pass rates, and structural feasibility. It is a product-quality and guidance-alignment smoke test, not clinical validation.
 
 ## Tests
 
@@ -243,7 +247,7 @@ mypy ai_nutritionist
 pytest -q
 ```
 
-Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, evaluation matrix behavior, and CLI smoke behavior.
+Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, Hybrid V2 determinism and hard-limit preservation, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, paired evaluation behavior, and CLI smoke behavior.
 
 ## Privacy And Security
 
@@ -258,6 +262,7 @@ Do not enter sensitive medical details, diagnoses, medication information, aller
 - Weight-loss targets use a bounded deficit heuristic and portion scaling, but they do not guarantee weight change.
 - Feedback is local product feedback, not a clinical outcome label or diagnosis signal.
 - USDA nutrient rows and curated Mediterranean estimates are useful reference data but do not capture allergies, medication interactions, budget, cooking method, appetite, disease state, or clinician guidance.
+- Catalog rows and current grocery exports are plate components or opaque prepared dishes, not a validated ingredient-level recipe database.
 - Total sugars are not the same as added sugars. The system treats sugar as a ranking and guardrail signal, not a medical rule.
 - Vegan recommendations include plant-only filtering but do not solve B12, vitamin D, iron, iodine, omega-3, or calcium planning by themselves.
 - Keto-style recommendations are not a therapeutic ketogenic diet and should not be used to manage diabetes, epilepsy, pregnancy nutrition, or medical conditions.

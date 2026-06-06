@@ -1,8 +1,6 @@
 # Evaluation
 
-The evaluation matrix checks whether the recommender produces structurally reasonable meal plans across BMI, age, and dietary-pattern profiles.
-
-The current project is evaluated as a standalone software system, not as a thesis or academic study. The matrix is a product-quality and guidance-alignment check.
+The evaluation suite checks whether the recommender produces structurally feasible plans across BMI, age, goal, and dietary-pattern profiles. It also runs identical profiles through the legacy planner and the default Hybrid V2 planner for a paired engineering comparison.
 
 Run:
 
@@ -10,32 +8,32 @@ Run:
 python -m ai_nutritionist.evaluation
 ```
 
-Latest local run:
+## Latest Local Result
 
-| Profile | Pattern | Age | BMI | Category | Goal | Target kcal | Calorie delta | Avg. quality | Baseline proxy | Lift | Protein | Produce | Sodium | Sat. fat |
-| --- | --- | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |
-| young_underweight | omnivore | 24 | 17.9 | Underweight | support gradual weight gain | 2714 | 9.8% | 99.5 | 81.4 | 18.1 | yes | yes | no | yes |
-| adult_normal | omnivore | 30 | 23.1 | Normal | maintain balanced intake | 2682 | 8.5% | 99.3 | 82.0 | 17.3 | yes | yes | no | yes |
-| adult_normal_vegan | vegan | 32 | 23.0 | Normal | maintain balanced intake | 2223 | 5.9% | 99.1 | 83.1 | 16.0 | yes | yes | no | yes |
-| adult_normal_mediterranean | mediterranean | 30 | 23.1 | Normal | maintain balanced intake | 2682 | 8.5% | 99.3 | 82.0 | 17.3 | yes | yes | no | yes |
-| adult_normal_vegetarian | vegetarian | 38 | 23.2 | Normal | maintain balanced intake | 2056 | 3.1% | 98.8 | 83.2 | 15.6 | yes | yes | yes | yes |
-| adult_normal_keto_style | keto_style | 30 | 23.1 | Normal | maintain balanced intake | 2682 | 20.2% | 99.5 | 75.5 | 24.0 | yes | yes | no | yes |
-| midlife_overweight | omnivore | 45 | 27.2 | Overweight | support gradual weight reduction | 2435 | 3.0% | 99.5 | 84.4 | 15.1 | yes | yes | yes | yes |
-| midlife_obese | omnivore | 45 | 33.3 | Severely overweight | support gradual weight reduction | 2363 | 3.0% | 99.4 | 84.4 | 15.0 | yes | yes | no | yes |
-| older_normal | omnivore | 72 | 24.2 | Normal | maintain balanced intake | 1924 | 10.9% | 98.8 | 80.9 | 17.9 | yes | yes | yes | yes |
+The current 9-profile matrix covers underweight, normal, overweight, severely overweight, older-adult, Mediterranean, vegetarian, vegan, and keto-style profiles.
 
-Summary:
+| Metric | Legacy | Hybrid V2 |
+| --- | ---: | ---: |
+| Average calorie-target delta | 8.1% | 2.7% |
+| Meal-level sodium pass rate | 74.1% | 96.3% |
+| Daily sodium pass rate | 100.0% | 100.0% |
+| Structural feasibility rate | 100.0% | 100.0% |
+| Profiles changed by Hybrid V2 | n/a | 9/9 |
 
-- Profiles evaluated: 9
-- Average internal quality score: 99.2
-- Average constraint-only baseline proxy score: 81.9
-- Average quality lift versus baseline proxy: 17.4
-- Average calorie-target delta: 8.1%
-- Profiles with protein each meal: 9/9
-- Profiles with produce each meal: 9/9
-- Profiles within sodium guardrails: 3/9
-- Profiles within saturated-fat guardrails: 9/9
+Hybrid V2 also preserves already-passing daily and meal-level sodium, saturated-fat, sugar, and keto-style carbohydrate limits while evaluating candidate changes.
+
+## Metric Definitions
+
+- **Calorie-target delta:** absolute difference between generated daily calories and the app's estimated target.
+- **Meal-level sodium pass rate:** percentage of meals within the app's allocated meal sodium guardrail.
+- **Daily sodium pass rate:** percentage of profiles within the app's daily sodium guardrail.
+- **Structural feasibility:** every meal contains protein, produce, and at least three food groups.
+- **Protein/fiber coverage:** generated daily total divided by the app target, capped at 100% for aggregate reporting.
+
+The legacy and Hybrid V2 runs use identical inputs and targets. The comparison does not use internal quality scores or the optimizer objective as public evidence.
 
 ## Interpretation
 
-The matrix is a product-quality smoke check for structurally reasonable outputs: each profile receives meals with protein, produce, high-fiber choices, calorie-target tracking, and guardrail checks. It is not clinical validation and does not prove health outcomes. The baseline proxy is a transparent constraint-only scoring comparison, not a separate clinical model. Some Mediterranean-style and keto-style profiles exceed strict per-meal sodium allocation; this is documented rather than hidden. Keto-style keeps carbohydrate and saturated-fat guardrails tighter, but can sit farther below the broad daily calorie estimate because the mode is intentionally low-carbohydrate. The quality score is an internal guardrail metric for tests and evaluation, not a customer-facing claim of clinical accuracy, nutrition adequacy, safety, or medical effectiveness.
+This is a deterministic product-quality and guidance-alignment benchmark. The measured result shows that Hybrid V2 improves target fit and meal-level sodium allocation on the current profile matrix without reducing structural feasibility or daily sodium compliance.
+
+The benchmark does not establish nutrient adequacy, clinical safety, health outcomes, medical effectiveness, or guaranteed weight change. Keto-style mode can remain farther below the broad daily calorie estimate because it preserves its tighter low-carbohydrate and saturated-fat constraints.

@@ -28,6 +28,7 @@ class RecommendationRequest(BaseModel):
     avoid_terms: list[str] = Field(default_factory=list)
     preferred_terms: list[str] = Field(default_factory=list)
     top_k: int = Field(default=4, ge=3, le=5)
+    planner_mode: Literal["legacy", "hybrid_v2"] = "hybrid_v2"
 
 
 class WeeklyRecommendationRequest(RecommendationRequest):

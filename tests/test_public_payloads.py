@@ -24,6 +24,9 @@ def test_public_daily_payload_hides_internal_scores_and_adds_grocery_list():
     assert "neural_score" not in text
     assert "model_name" not in text
     assert "score" not in payload["meals"][0]["items"][0]
+    assert payload["planner_summary"]["planner_mode"] == "hybrid_v2"
+    assert "objective" not in text
+    assert "base_serving" not in text
 
 
 def test_public_weekly_payload_contains_days_and_weekly_grocery_list():

@@ -25,6 +25,7 @@ def public_daily_payload(result: RecommendationResult) -> dict[str, Any]:
         "daily_totals": result.daily_totals,
         "daily_progress": result.daily_progress,
         "macro_percentages": result.macro_percentages,
+        "planner_summary": asdict(result.planner_summary),
         "preferences": result.preferences,
         "meals": [_public_meal(meal) for meal in result.meals],
         "grocery_list": build_grocery_list(result),

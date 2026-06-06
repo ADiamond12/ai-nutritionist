@@ -47,3 +47,11 @@ def test_streamlit_exposes_grocery_list_export_without_internal_scores():
     assert "Download grocery CSV" in app_source
     assert "build_grocery_list" in app_source
     assert "grocery_list_csv" in app_source
+
+
+def test_streamlit_shows_public_planner_summary_without_internal_objective():
+    app_source = _ui_source()
+
+    assert "Planner: Hybrid V2" in app_source
+    assert "objective_score" not in app_source
+    assert "plan_objective" not in app_source

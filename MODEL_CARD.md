@@ -36,7 +36,9 @@ The model uses a scikit-learn MLP regressor with hidden layers `(32, 16)`, ReLU 
 
 The planner combines the neural score with deterministic heuristic scoring, preference boosts, avoid-term filters, dietary-pattern filters, meal-slot rules, and guardrails for calories, sodium, saturated fat, sugars, protein, fiber, and food-family repetition. The neural ranker does not produce final meal plans by itself.
 
-Customer-facing Streamlit and API payloads intentionally hide internal quality, neural, and heuristic scores. Those values are retained for tests and evaluation only.
+The default Hybrid V2 planner then performs bounded, deterministic complete-day optimization over same-group substitutions and portions. It preserves already-passing hard guardrails and accepts only objective-improving changes. The legacy planner remains available for paired engineering benchmarks.
+
+Customer-facing Streamlit and API payloads intentionally hide internal quality, neural, heuristic, and optimization-objective scores.
 
 ## Evaluation
 
@@ -46,7 +48,7 @@ The repository includes tests and a 9-profile evaluation matrix:
 python -m ai_nutritionist.evaluation
 ```
 
-This evaluation checks product behavior and guidance-alignment signals such as protein presence, produce presence, calorie-target delta, sodium guardrails, saturated-fat guardrails, a constraint-only baseline proxy, and internal quality scores. It is not clinical validation and should not be read as evidence of medical accuracy.
+This evaluation checks product behavior and guidance-alignment signals such as protein presence, produce presence, calorie-target delta, sodium guardrails, saturated-fat guardrails, and structural feasibility. It also compares the legacy and Hybrid V2 planners on identical profiles. It is not clinical validation and should not be read as evidence of medical accuracy.
 
 ## Privacy And Security
 
@@ -61,3 +63,4 @@ The model trains from committed public/sample catalog rows. Streamlit feedback i
 - Vegan flags are conservative and may exclude ambiguous plant-based foods.
 - Keto-style mode is a low-carbohydrate wellness filter, not a therapeutic ketogenic diet.
 - Weak labels can encode project bias and may produce odd combinations, so deterministic guardrails and user review remain required.
+- The Hybrid V2 objective and engineering acceptance gates encode project priorities; they do not prove nutrition adequacy or health outcomes.

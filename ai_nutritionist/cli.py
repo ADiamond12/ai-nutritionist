@@ -45,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--topk", "--top-k", dest="topk", type=int, default=5, help="Items per meal")
     parser.add_argument("--weekly", action="store_true", help="Print a 7-day meal plan instead of one day")
     parser.add_argument("--days", type=int, default=7, help="Number of days for --weekly, from 1 to 14")
+    parser.add_argument(
+        "--planner-mode",
+        choices=["legacy", "hybrid_v2"],
+        default="hybrid_v2",
+        help="Use the Hybrid V2 optimizer or the legacy benchmark planner",
+    )
     return parser
 
 
@@ -66,6 +72,7 @@ def main(argv: list[str] | None = None) -> int:
             top_k=args.topk,
             veg_filter=args.veg,
             days=args.days,
+            planner_mode=args.planner_mode,
         )
         print("AI Nutritionist recommendation system")
         print(weekly.disclaimer)
@@ -106,6 +113,7 @@ def main(argv: list[str] | None = None) -> int:
         preferred_terms=args.prefer,
         top_k=args.topk,
         veg_filter=args.veg,
+        planner_mode=args.planner_mode,
     )
 
     print("AI Nutritionist recommendation system")
@@ -129,6 +137,9 @@ def _print_daily_result(
     if body_fat_input is not None:
         print(f"Body fat: {body_fat_input:.1f}%")
     print(f"Focus: {result.preferences['goal_focus']}")
+    print(f"Planner: {result.planner_summary.planner_mode}")
+    if result.planner_summary.remaining_constraints:
+        print(f"Planner notes: {'; '.join(result.planner_summary.remaining_constraints)}")
     avoid_terms = _preference_terms(result.preferences.get("avoid_terms"))
     preferred_terms = _preference_terms(result.preferences.get("preferred_terms"))
     if avoid_terms:
