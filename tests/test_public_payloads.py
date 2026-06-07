@@ -46,6 +46,7 @@ def test_public_weekly_payload_contains_days_and_weekly_grocery_list():
     assert len(payload["days"]) == 7
     assert payload["grocery_list"]
     assert payload["weekly_averages"]["calories"] > 0
+    assert payload["planner_summary"]["planner_mode"] == "hybrid_v2"
     assert "quality_score" not in text
     assert "neural_score" not in text
     assert "model_name" not in text

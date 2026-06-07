@@ -30,7 +30,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 87 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 88 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -45,6 +45,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Trains a deterministic `MLPRegressor` ranker on weak-supervised nutrition-quality labels derived from USDA nutrients and public-health guidance.
 - Combines neural ranking with hard meal guardrails for calories, sodium, saturated fat, sugars, and food-family repetition.
 - Runs deterministic Hybrid V2 complete-day optimization with bounded same-group substitutions and portion adjustments.
+- Rolls per-day Hybrid V2 diagnostics into weekly public-safe planner summaries.
 - Keeps the legacy planner available as an explicit benchmark baseline rather than using an invented comparison score.
 - Supports nutrition focus modes: balanced, higher protein, higher fiber, lighter meals, and lower sodium.
 - Supports avoid/prefer terms so users can steer recommendations without making medical claims.

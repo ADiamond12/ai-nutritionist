@@ -53,5 +53,6 @@ def test_streamlit_shows_public_planner_summary_without_internal_objective():
     app_source = _ui_source()
 
     assert "Planner: Hybrid V2" in app_source
+    assert "Weekly planner:" in app_source
     assert "objective_score" not in app_source
     assert "plan_objective" not in app_source

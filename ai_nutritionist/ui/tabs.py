@@ -69,6 +69,17 @@ def render_profile_tab(
 
 def render_weekly_tab(weekly_result) -> None:
     st.subheader("Weekly Meal Rotation")
+    planner_label = (
+        "Hybrid V2"
+        if weekly_result.planner_summary.planner_mode == "hybrid_v2"
+        else "Legacy baseline"
+    )
+    st.caption(
+        f"Weekly planner: {planner_label} | Substitutions: {weekly_result.planner_summary.substitutions} | "
+        f"Portion adjustments: {weekly_result.planner_summary.portion_adjustments}"
+    )
+    if weekly_result.planner_summary.remaining_constraints:
+        st.info("Weekly planning notes: " + "; ".join(weekly_result.planner_summary.remaining_constraints))
     avg_col, poultry_col, fish_col, legume_col = st.columns(4)
     avg_col.metric("Average calories", f"{weekly_result.weekly_averages['calories']:.0f}")
     poultry_col.metric("Poultry days", weekly_result.variety_counts["poultry_days"])

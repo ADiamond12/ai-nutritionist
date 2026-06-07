@@ -78,6 +78,9 @@ def test_recommend_week_builds_varied_mediterranean_rotation_with_practical_food
     ]
     assert weekly.weight_goal == "lose"
     assert weekly.dietary_pattern == "mediterranean"
+    assert weekly.planner_summary.planner_mode == "hybrid_v2"
+    assert weekly.planner_summary.substitutions >= 0
+    assert weekly.planner_summary.portion_adjustments >= 0
 
     all_names = " ".join(
         item["food_name"].lower()
@@ -96,6 +99,24 @@ def test_recommend_week_builds_varied_mediterranean_rotation_with_practical_food
     assert weekly.variety_counts["poultry_days"] >= 1
     assert weekly.variety_counts["fish_days"] >= 2
     assert weekly.variety_counts["legume_days"] >= 2
+
+
+def test_legacy_weekly_planner_summary_rolls_up_daily_baseline_mode():
+    weekly = recommend_week(
+        weight_kg=125,
+        height_cm=200,
+        age=30,
+        sex="male",
+        dietary_pattern="mediterranean",
+        weight_goal="lose",
+        top_k=3,
+        planner_mode="legacy",
+    )
+
+    assert weekly.planner_summary.planner_mode == "legacy"
+    assert not weekly.planner_summary.optimized
+    assert weekly.planner_summary.substitutions == 0
+    assert weekly.planner_summary.portion_adjustments == 0
 
 
 def test_mediterranean_preferred_chicken_can_surface_in_daily_plan():

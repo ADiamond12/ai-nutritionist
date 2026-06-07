@@ -42,6 +42,7 @@ def public_weekly_payload(result: WeeklyRecommendationResult) -> dict[str, Any]:
         "weekly_totals": result.weekly_totals,
         "weekly_averages": result.weekly_averages,
         "variety_counts": result.variety_counts,
+        "planner_summary": asdict(result.planner_summary),
         "days": [
             {
                 "day_name": day.day_name,

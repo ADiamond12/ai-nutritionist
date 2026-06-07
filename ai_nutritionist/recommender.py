@@ -165,6 +165,7 @@ class WeeklyRecommendationResult:
     weekly_totals: dict[str, float]
     weekly_averages: dict[str, float]
     variety_counts: dict[str, int]
+    planner_summary: PlanOptimizationSummary
     safety_notice: str
     disclaimer: str
 
@@ -502,6 +503,7 @@ def recommend_week(
         weekly_totals=weekly_totals,
         weekly_averages=weekly_averages,
         variety_counts=_weekly_variety_counts(planned_days),
+        planner_summary=_weekly_planner_summary(planned_days),
         safety_notice=SAFETY_DISCLAIMER,
         disclaimer=SAFETY_DISCLAIMER,
     )
@@ -580,6 +582,32 @@ def _weekly_variety_counts(days: list[WeeklyDayRecommendation]) -> dict[str, int
             for day in days
         ),
     }
+
+
+def _weekly_planner_summary(days: list[WeeklyDayRecommendation]) -> PlanOptimizationSummary:
+    if not days:
+        return PlanOptimizationSummary(
+            planner_mode="hybrid_v2",
+            optimized=False,
+            substitutions=0,
+            portion_adjustments=0,
+            remaining_constraints=(),
+        )
+
+    summaries = [day.result.planner_summary for day in days]
+    notes = []
+    for day, summary in zip(days, summaries):
+        for note in summary.remaining_constraints:
+            day_note = f"{day.day_name}: {note}"
+            if day_note not in notes:
+                notes.append(day_note)
+    return PlanOptimizationSummary(
+        planner_mode=summaries[0].planner_mode,
+        optimized=any(summary.optimized for summary in summaries),
+        substitutions=sum(summary.substitutions for summary in summaries),
+        portion_adjustments=sum(summary.portion_adjustments for summary in summaries),
+        remaining_constraints=tuple(notes[:8]),
+    )
 
 
 def _day_has_any(day: WeeklyDayRecommendation, terms: tuple[str, ...]) -> bool:

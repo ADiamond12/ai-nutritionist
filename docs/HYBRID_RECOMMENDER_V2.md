@@ -45,6 +45,8 @@ Streamlit, CLI, and API outputs may show:
 - portion-adjustment count;
 - short remaining-constraint notes.
 
+Daily and weekly plans both expose public-safe planner summaries. Weekly summaries aggregate the per-day Hybrid V2 substitutions, portion adjustments, and remaining notes.
+
 Internal ranking scores and optimization-objective values are not exposed publicly.
 
 ## Paired Benchmark

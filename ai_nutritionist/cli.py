@@ -79,6 +79,9 @@ def main(argv: list[str] | None = None) -> int:
         print()
         print(f"Weight goal: {weekly.weight_goal}")
         print(f"Diet: {weekly.dietary_pattern}")
+        print(f"Planner: {weekly.planner_summary.planner_mode}")
+        if weekly.planner_summary.remaining_constraints:
+            print(f"Planner notes: {'; '.join(weekly.planner_summary.remaining_constraints)}")
         print("Weekly Mediterranean rotation" if weekly.dietary_pattern == "mediterranean" else "Weekly meal rotation")
         print(
             "Weekly averages -> "

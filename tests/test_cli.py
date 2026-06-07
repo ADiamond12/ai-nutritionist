@@ -138,6 +138,7 @@ def test_cli_accepts_weight_goal_and_weekly_plan_flags(tmp_path):
     assert completed.returncode == 0, completed.stderr
     completed.stdout.encode("ascii")
     assert "Weight goal: lose" in completed.stdout
+    assert "Planner: hybrid_v2" in completed.stdout
     assert "Weekly Mediterranean rotation" in completed.stdout
     assert "Monday" in completed.stdout
     assert "Sunday" in completed.stdout
