@@ -1,10 +1,17 @@
 from __future__ import annotations
 
 from io import StringIO
+from pathlib import Path
 from typing import Any
 import csv
 
+from ai_nutritionist.constants import DEFAULT_DATA_DIR
 from ai_nutritionist.recommender import RecommendationResult, WeeklyRecommendationResult
+from ai_nutritionist.recipes import (
+    RECIPE_DATA_DIRNAME,
+    build_recipe_ingredient_grocery_list_from_items,
+    load_recipe_tables,
+)
 
 
 def build_grocery_list(result: RecommendationResult | WeeklyRecommendationResult) -> list[dict[str, Any]]:
@@ -49,6 +56,17 @@ def grocery_list_csv(grocery_list: list[dict[str, Any]]) -> str:
     for row in grocery_list:
         writer.writerow({field: row.get(field, "") for field in fieldnames})
     return output.getvalue()
+
+
+def build_recipe_ingredient_grocery_list_for_plan(
+    result: RecommendationResult | WeeklyRecommendationResult,
+    recipe_dir: Path | str | None = None,
+) -> list[dict[str, Any]]:
+    base_dir = Path(recipe_dir) if recipe_dir is not None else DEFAULT_DATA_DIR / RECIPE_DATA_DIRNAME
+    if not base_dir.exists():
+        return []
+    tables = load_recipe_tables(base_dir)
+    return build_recipe_ingredient_grocery_list_from_items(tables, list(_iter_food_items(result)))
 
 
 def _iter_food_items(result: RecommendationResult | WeeklyRecommendationResult):

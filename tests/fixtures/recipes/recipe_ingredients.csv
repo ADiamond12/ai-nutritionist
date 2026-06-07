@@ -1,0 +1,17 @@
+recipe_id,ingredient_id,ingredient_name,ingredient_role,fdc_id,fdc_data_type,source_food_name,quantity,unit,edible_grams,preparation_state,nutrient_basis,is_optional,substitution_group,vegetarian,vegan,contains_allergen_tags,mapping_confidence,mapping_notes,calories_per_100g,protein_g_per_100g,carbohydrate_g_per_100g,fat_g_per_100g,fiber_g_per_100g,sugars_g_per_100g,sodium_mg_per_100g,saturated_fat_g_per_100g
+fixture_lentil_soup_v1,lentils,lentils,protein,fixture_lentils,fixture,cooked lentils,200,g,200,cooked,per_100g,false,legume_base,true,true,,fixture,Fixture nutrient values.,116,9,20,0.4,8,1.8,2,0.1
+fixture_lentil_soup_v1,tomato,tomato,vegetable,fixture_tomato,fixture,tomato,150,g,150,raw,per_100g,false,vegetable_base,true,true,,fixture,Fixture nutrient values.,18,0.9,3.9,0.2,1.2,2.6,5,0
+fixture_lentil_soup_v1,carrot,carrot,vegetable,fixture_carrot,fixture,carrot,80,g,80,raw,per_100g,false,vegetable_base,true,true,,fixture,Fixture nutrient values.,41,0.9,9.6,0.2,2.8,4.7,69,0
+fixture_lentil_soup_v1,onion,onion,vegetable,fixture_onion,fixture,onion,60,g,60,raw,per_100g,false,vegetable_base,true,true,,fixture,Fixture nutrient values.,40,1.1,9.3,0.1,1.7,4.2,4,0
+fixture_lentil_soup_v1,olive_oil,olive oil,healthy_fat,fixture_olive_oil,fixture,olive oil,20,g,20,raw,per_100g,false,fat_base,true,true,,fixture,Fixture nutrient values.,884,0,0,100,0,0,0,14
+fixture_lentil_soup_v1,salt,salt,seasoning,fixture_salt,fixture,salt,2,g,2,raw,per_100g,false,salt,true,true,,fixture,Fixture nutrient values.,0,0,0,0,0,0,38758,0
+fixture_lentil_soup_v1,water,water,liquid,fixture_water,fixture,water,500,g,500,raw,per_100g,false,liquid,true,true,,fixture,Fixture nutrient values.,0,0,0,0,0,0,0,0
+fixture_greek_yogurt_bowl_v1,yogurt,Greek yogurt,protein,fixture_yogurt,fixture,plain Greek yogurt,200,g,200,raw,per_100g,false,dairy_base,true,false,milk,fixture,Fixture nutrient values.,59,10,3.6,0.4,0,3.2,36,0.1
+fixture_greek_yogurt_bowl_v1,berries,berries,fruit,fixture_berries,fixture,mixed berries,80,g,80,raw,per_100g,false,fruit_base,true,true,,fixture,Fixture nutrient values.,50,0.7,12,0.3,2.4,7,1,0
+fixture_greek_yogurt_bowl_v1,oats,oats,whole_grain,fixture_oats,fixture,oats,40,g,40,raw,per_100g,false,grain_base,true,true,,fixture,Fixture nutrient values.,389,16.9,66.3,6.9,10.6,1,2,1.2
+fixture_greek_yogurt_bowl_v1,walnuts,walnuts,healthy_fat,fixture_walnuts,fixture,walnuts,20,g,20,raw,per_100g,false,nut_base,true,true,tree_nut,fixture,Fixture nutrient values.,654,15.2,13.7,65.2,6.7,2.6,2,6.1
+fixture_chicken_rice_plate_v1,chicken,chicken breast,protein,fixture_chicken,fixture,grilled chicken breast,300,g,300,cooked,per_100g,false,poultry_base,false,false,,fixture,Fixture nutrient values.,165,31,0,3.6,0,0,74,1
+fixture_chicken_rice_plate_v1,rice,brown rice,whole_grain,fixture_rice,fixture,cooked brown rice,250,g,250,cooked,per_100g,false,grain_base,true,true,,fixture,Fixture nutrient values.,123,2.7,25.6,1,1.8,0.2,4,0.3
+fixture_chicken_rice_plate_v1,broccoli,broccoli,vegetable,fixture_broccoli,fixture,broccoli,200,g,200,cooked,per_100g,false,vegetable_base,true,true,,fixture,Fixture nutrient values.,35,2.4,7.2,0.4,3.3,1.4,41,0.1
+fixture_chicken_rice_plate_v1,olive_oil,olive oil,healthy_fat,fixture_olive_oil,fixture,olive oil,20,g,20,raw,per_100g,false,fat_base,true,true,,fixture,Fixture nutrient values.,884,0,0,100,0,0,0,14
+fixture_chicken_rice_plate_v1,salt,salt,seasoning,fixture_salt,fixture,salt,2,g,2,raw,per_100g,false,salt,true,true,,fixture,Fixture nutrient values.,0,0,0,0,0,0,38758,0

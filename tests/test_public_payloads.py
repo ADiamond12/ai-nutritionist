@@ -19,6 +19,7 @@ def test_public_daily_payload_hides_internal_scores_and_adds_grocery_list():
 
     assert payload["system_name"] == "AI Nutritionist"
     assert payload["grocery_list"]
+    assert "recipe_ingredient_grocery_list" in payload
     assert payload["daily_targets"]["calories"] == result.daily_targets.calories
     assert "quality_score" not in text
     assert "neural_score" not in text
@@ -45,6 +46,7 @@ def test_public_weekly_payload_contains_days_and_weekly_grocery_list():
 
     assert len(payload["days"]) == 7
     assert payload["grocery_list"]
+    assert "recipe_ingredient_grocery_list" in payload
     assert payload["weekly_averages"]["calories"] > 0
     assert payload["planner_summary"]["planner_mode"] == "hybrid_v2"
     assert "quality_score" not in text

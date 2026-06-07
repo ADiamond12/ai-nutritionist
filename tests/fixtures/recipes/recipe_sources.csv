@@ -1,0 +1,2 @@
+source_id,source_type,source_title,source_url,source_release,source_license,created_by,created_at,reviewed_at,review_notes
+fixture_source,fixture,Public test fixture,,,MIT-compatible fixture,project fixture,2026-06-08,2026-06-08,Small deterministic fixture rows for recipe contract tests.

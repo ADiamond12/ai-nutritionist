@@ -20,7 +20,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md) maps public nutrition guidance to code-level guardrails and caveats.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
 - [docs/HYBRID_RECOMMENDER_V2.md](docs/HYBRID_RECOMMENDER_V2.md) explains complete-day optimization, hard-limit preservation, and paired benchmark evidence.
-- [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md) defines the next ingredient-level recipe data milestone.
+- [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md) defines the ingredient-level recipe data contract, fixture tests, and small curated pilot.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
 - [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md) and [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md) document hosted deployment setup.
 - [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
@@ -31,7 +31,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 88 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 95 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Docker runtime health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -43,6 +43,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Optionally uses body-fat percentage to estimate lean body mass and raise protein targets.
 - Builds an expanded processed USDA/FNDDS food catalog with meal tags, serving sizes, vegetarian flags, vegan flags, and processing signals.
 - Adds a curated Mediterranean/Greek extension with practical foods such as Greek yogurt bowls, dakos-style toast, lentil soup, fasolada, chickpea salads, grilled fish, horta, Greek salads, and olive-oil vegetable sides.
+- Adds a small reviewed recipe-backed Mediterranean pilot under `data/recipes/`; recipe rows are validated, aggregated from ingredients, and projected back into the flat catalog schema.
 - Trains a deterministic `MLPRegressor` ranker on weak-supervised nutrition-quality labels derived from USDA nutrients and public-health guidance.
 - Combines neural ranking with hard meal guardrails for calories, sodium, saturated fat, sugars, and food-family repetition.
 - Runs deterministic Hybrid V2 complete-day optimization with bounded same-group substitutions and portion adjustments.
@@ -53,7 +54,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Supports Mediterranean/Greek, omnivore, vegetarian, vegan, and keto-style / low-carb dietary patterns.
 - Builds a 7-day plan option with Mediterranean-style rotation across poultry, fish/seafood, legumes, vegetables, whole grains/starches, and olive-oil sides.
 - Produces meal titles, item-level nutrient totals, macro percentages, daily progress, swap alternatives, local thumbs feedback, and plain-language explanations.
-- Produces grouped grocery lists with CSV export for daily or weekly plans.
+- Produces grouped grocery lists with CSV export for daily or weekly plans, plus ingredient-level CSV export when generated plans include recipe-backed pilot rows.
 - Exposes a FastAPI app with public-safe daily and weekly recommendation payloads that hide internal ranking scores.
 - Stores feedback only in the current Streamlit session by default; it can be exported as CSV, but it is not uploaded by the app.
 - Supports an optional local SQLite feedback store for API experiments. The store is initialized only when feedback endpoints are used; the default path is `.local/feedback.sqlite`, which is ignored by git.
@@ -201,6 +202,8 @@ The container starts Streamlit on `0.0.0.0:8501`, includes a Dockerfile `HEALTHC
 python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health').read().decode())"
 ```
 
+Latest local Docker proof used `docker build -t ai-nutritionist:recipe-pilot .`, ran the container with host port `8502`, and received `ok` from `/_stcore/health`.
+
 ## Deployment Notes
 
 The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
@@ -209,11 +212,11 @@ For Streamlit Community Cloud, point the app to `app.py` and install from `requi
 
 ## Data
 
-The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. The full USDA archive is not committed.
+The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. `data/recipes/` adds a five-recipe ingredient-level Mediterranean pilot with curated-estimate nutrients and explicit source/review metadata. The full USDA archive is not committed.
 
-The current combined export contains 2,049 rows: 2,014 USDA/FNDDS-derived rows plus 35 curated Mediterranean/Greek rows. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
+The current runtime catalog contains 2,054 rows: 2,014 USDA/FNDDS-derived rows, 35 curated Mediterranean/Greek flat rows, and 5 recipe-backed pilot rows projected into the same catalog schema. The Hugging Face-compatible browsing export remains the 2,049-row flat catalog. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
 
-The next data milestone is documented in [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md). It defines how ingredient-level recipes should be represented, validated, aggregated, and migrated without inventing production recipe data.
+The recipe data layer is documented in [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md). It defines how ingredient-level recipes are represented, validated, aggregated, projected, and migrated without claiming a broad production recipe corpus.
 
 Rebuild the processed catalog and Hugging Face-compatible CSV export:
 
@@ -251,7 +254,7 @@ mypy ai_nutritionist
 pytest -q
 ```
 
-Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, neural ranking reproducibility, Hybrid V2 determinism and hard-limit preservation, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, paired evaluation behavior, and CLI smoke behavior.
+Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, recipe data validation/projection, ingredient grocery export, neural ranking reproducibility, Hybrid V2 determinism and hard-limit preservation, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, paired evaluation behavior, and CLI smoke behavior.
 
 ## Privacy And Security
 
@@ -266,7 +269,7 @@ Do not enter sensitive medical details, diagnoses, medication information, aller
 - Weight-loss targets use a bounded deficit heuristic and portion scaling, but they do not guarantee weight change.
 - Feedback is local product feedback, not a clinical outcome label or diagnosis signal.
 - USDA nutrient rows and curated Mediterranean estimates are useful reference data but do not capture allergies, medication interactions, budget, cooking method, appetite, disease state, or clinician guidance.
-- Catalog rows and current grocery exports are plate components or opaque prepared dishes, not a validated ingredient-level recipe database.
+- Most catalog rows and grouped grocery exports are plate components or opaque prepared dishes. Ingredient-level grocery export is available only for the small reviewed recipe-backed pilot and should not be treated as a complete recipe database.
 - Total sugars are not the same as added sugars. The system treats sugar as a ranking and guardrail signal, not a medical rule.
 - Vegan recommendations include plant-only filtering but do not solve B12, vitamin D, iron, iodine, omega-3, or calcium planning by themselves.
 - Keto-style recommendations are not a therapeutic ketogenic diet and should not be used to manage diabetes, epilepsy, pregnancy nutrition, or medical conditions.

@@ -174,6 +174,8 @@ def _goal_focus_objective(daily: dict[str, float], targets: DailyTargets, goal_f
         return -8 * _ratio(daily["protein_g"], targets.protein_g)
     if goal_focus == "higher_fiber":
         return -8 * _ratio(daily["fiber_g"], targets.fiber_g)
+    if goal_focus == "lighter_meals":
+        return 8 * _ratio(daily["calories"], targets.calories)
     return 0.0
 
 

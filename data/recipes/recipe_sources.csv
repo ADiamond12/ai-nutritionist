@@ -1,0 +1,2 @@
+source_id,source_type,source_title,source_url,source_release,source_license,created_by,created_at,reviewed_at,review_notes
+med_pilot_curated,curated_estimate,Curated Mediterranean recipe pilot,https://fdc.nal.usda.gov/download-datasets/,FNDDS 2021-2023 October 2024 reference posture,Public-domain USDA-style nutrient estimates with project-curated portions,project,2026-06-08,2026-06-08,Estimated ingredient-level pilot; not clinical validation

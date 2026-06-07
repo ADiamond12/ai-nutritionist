@@ -108,6 +108,9 @@ GENERIC_WEEK_ROTATION = (
     ("egg_dairy", ("egg", "yogurt")),
 )
 
+ALTERNATIVE_CANDIDATE_POOL = 8
+PUBLIC_ALTERNATIVE_LIMIT = 3
+
 
 @dataclass(frozen=True)
 class MealRecommendation:
@@ -248,6 +251,11 @@ def recommend(
     )
     if planner_mode == "hybrid_v2":
         meals, planner_summary = _optimize_meals(meals, profile, dietary_pattern, preferences.goal_focus)
+    else:
+        meals = [
+            replace(meal, alternatives=_limit_alternatives(meal.alternatives))
+            for meal in meals
+        ]
     daily_totals = nutrition_totals([item for meal in meals for item in meal.items])
 
     return RecommendationResult(
@@ -321,10 +329,14 @@ def _exclude_selected_alternatives(
     selected_ids: set[int],
 ) -> dict[str, list[dict[str, Any]]]:
     return {
-        group: [item for item in items if int(item["fdc_id"]) not in selected_ids]
+        group: [item for item in items if int(item["fdc_id"]) not in selected_ids][:PUBLIC_ALTERNATIVE_LIMIT]
         for group, items in alternatives.items()
         if any(int(item["fdc_id"]) not in selected_ids for item in items)
     }
+
+
+def _limit_alternatives(alternatives: dict[str, list[dict[str, Any]]]) -> dict[str, list[dict[str, Any]]]:
+    return {group: items[:PUBLIC_ALTERNATIVE_LIMIT] for group, items in alternatives.items() if items}
 
 
 def _align_portions_for_goal(
@@ -926,7 +938,9 @@ def _build_alternatives(scored: pd.DataFrame, selected_rows: list[pd.Series]) ->
     selected_ids = {int(row["fdc_id"]) for row in selected_rows}
     alternatives: dict[str, list[dict[str, Any]]] = {}
     for group in ["protein", "vegetable", "fruit", "whole_grain", "healthy_fat"]:
-        rows = scored.loc[(scored["food_group"] == group) & (~scored["fdc_id"].isin(selected_ids))].head(3)
+        rows = scored.loc[(scored["food_group"] == group) & (~scored["fdc_id"].isin(selected_ids))].head(
+            ALTERNATIVE_CANDIDATE_POOL
+        )
         if not rows.empty:
             alternatives[group] = [_food_record(row) for _, row in rows.iterrows()]
     return alternatives

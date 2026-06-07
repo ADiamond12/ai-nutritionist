@@ -18,7 +18,7 @@ The FastAPI feedback endpoint is intended for local experiments. The feedback st
 
 ## API Boundary
 
-The API returns public-safe recommendation payloads and omits internal neural, heuristic, and quality scores. It does not provide authentication or user management, and its only persistence path is the optional local feedback endpoint described above. Do not expose it as a production public service without adding rate limiting, privacy policy, retention rules, and abuse controls.
+The API returns public-safe recommendation payloads and omits internal neural, heuristic, and quality scores. Recipe ingredient grocery output is generated only for reviewed recipe-backed pilot rows and uses informational allergen tags; those tags are not allergy-safety guarantees. The API does not provide authentication or user management, and its only persistence path is the optional local feedback endpoint described above. Do not expose it as a production public service without adding rate limiting, privacy policy, retention rules, and abuse controls.
 
 ## Safety Scope
 

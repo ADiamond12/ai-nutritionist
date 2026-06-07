@@ -1,0 +1,38 @@
+recipe_id,ingredient_id,ingredient_name,ingredient_role,fdc_id,fdc_data_type,source_food_name,quantity,unit,edible_grams,preparation_state,nutrient_basis,is_optional,substitution_group,vegetarian,vegan,contains_allergen_tags,mapping_confidence,mapping_notes,calories_per_100g,protein_g_per_100g,carbohydrate_g_per_100g,fat_g_per_100g,fiber_g_per_100g,sugars_g_per_100g,sodium_mg_per_100g,saturated_fat_g_per_100g
+med_chicken_souvlaki_plate_v1,chicken_breast,chicken breast,protein,,curated,chicken breast cooked,280,g,280,grilled,per_100g,false,protein_base,false,false,,estimated,Curated USDA-style estimate,165,31,0,3.6,0,0,74,1
+med_chicken_souvlaki_plate_v1,whole_wheat_pita,whole wheat pita,whole_grain,,curated,whole wheat pita,100,g,100,served,per_100g,false,grain_base,true,true,wheat_gluten,estimated,Curated USDA-style estimate,275,9,55,2.5,6,2,536,0.5
+med_chicken_souvlaki_plate_v1,tomato,tomato,vegetable,,curated,tomato raw,180,g,180,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_chicken_souvlaki_plate_v1,cucumber,cucumber,vegetable,,curated,cucumber raw,150,g,150,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,15,0.7,3.6,0.1,0.5,1.7,2,0
+med_chicken_souvlaki_plate_v1,romaine,romaine lettuce,vegetable,,curated,romaine lettuce raw,80,g,80,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,17,1.2,3.3,0.3,2.1,1.2,8,0
+med_chicken_souvlaki_plate_v1,tzatziki,tzatziki yogurt sauce,other,,curated,Greek yogurt cucumber sauce,100,g,100,assembled,per_100g,false,sauce_base,true,false,milk,estimated,Curated USDA-style estimate,80,8,4,3,0,3,45,2
+med_chicken_souvlaki_plate_v1,feta,feta cheese,other,,curated,feta cheese,40,g,40,served,per_100g,false,dairy_base,true,false,milk,estimated,Curated USDA-style estimate,265,14,4,21,0,4,917,15
+med_chicken_souvlaki_plate_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,20,g,20,served,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_lentil_soup_bread_v1,lentils,lentils,protein,,curated,lentils cooked,800,g,800,cooked,per_100g,false,legume_base,true,true,,estimated,Curated USDA-style estimate,116,9,20.1,0.4,7.9,1.8,2,0.1
+med_lentil_soup_bread_v1,crushed_tomato,crushed tomato,vegetable,,curated,tomato crushed,400,g,400,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_lentil_soup_bread_v1,carrot,carrot,vegetable,,curated,carrot raw,240,g,240,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,41,0.9,9.6,0.2,2.8,4.7,69,0
+med_lentil_soup_bread_v1,celery,celery,vegetable,,curated,celery raw,180,g,180,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,16,0.7,3,0.2,1.6,1.8,80,0
+med_lentil_soup_bread_v1,onion,onion,vegetable,,curated,onion raw,200,g,200,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_lentil_soup_bread_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,40,g,40,cooked,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_lentil_soup_bread_v1,whole_wheat_bread,whole wheat bread,whole_grain,,curated,whole wheat bread,160,g,160,served,per_100g,false,grain_base,true,true,wheat_gluten,estimated,Curated USDA-style estimate,247,13,41,4.2,7,5,400,0.8
+med_lentil_soup_bread_v1,salt,salt,seasoning,,curated,salt table,3,g,3,cooked,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0
+med_lentil_soup_bread_v1,water,water,liquid,,curated,water,500,g,500,cooked,per_100g,false,liquid_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,0,0
+med_salmon_horta_potatoes_v1,salmon,salmon,protein,,curated,salmon cooked,300,g,300,grilled,per_100g,false,protein_base,false,false,fish,estimated,Curated USDA-style estimate,206,22,0,12.4,0,0,59,2.5
+med_salmon_horta_potatoes_v1,potatoes,potatoes,whole_grain,,curated,potatoes boiled,420,g,420,boiled,per_100g,false,starch_base,true,true,,estimated,Curated USDA-style estimate,87,1.9,20.1,0.1,1.8,0.9,6,0
+med_salmon_horta_potatoes_v1,horta_greens,horta greens,vegetable,,curated,cooked greens,280,g,280,boiled,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,25,2.5,4,0.3,3,1,40,0
+med_salmon_horta_potatoes_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,25,g,25,served,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_salmon_horta_potatoes_v1,lemon,lemon,fruit,,curated,lemon juice,50,g,50,served,per_100g,false,acid_base,true,true,,estimated,Curated USDA-style estimate,22,0.4,6.9,0.2,0.3,2.5,1,0
+med_salmon_horta_potatoes_v1,salt,salt,seasoning,,curated,salt table,2,g,2,served,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0
+med_yogurt_oat_bowl_v1,greek_yogurt,Greek yogurt,protein,,curated,Greek yogurt plain lower-fat,180,g,180,served,per_100g,false,dairy_base,true,false,milk,estimated,Curated USDA-style estimate,70,10,3.6,1.5,0,3.2,36,0.9
+med_yogurt_oat_bowl_v1,oats,oats,whole_grain,,curated,oats dry,35,g,35,served,per_100g,false,grain_base,true,true,,estimated,Curated USDA-style estimate,389,16.9,66.3,6.9,10.6,1,2,1.2
+med_yogurt_oat_bowl_v1,berries,berries,fruit,,curated,mixed berries,100,g,100,raw,per_100g,false,fruit_base,true,true,,estimated,Curated USDA-style estimate,50,0.7,12,0.3,2.4,7,1,0
+med_yogurt_oat_bowl_v1,walnuts,walnuts,healthy_fat,,curated,walnuts,12,g,12,served,per_100g,false,nut_base,true,true,tree_nut,estimated,Curated USDA-style estimate,654,15.2,13.7,65.2,6.7,2.6,2,6.1
+med_yogurt_oat_bowl_v1,honey,honey,other,,curated,honey,6,g,6,served,per_100g,true,sweetener_base,true,false,,estimated,Curated USDA-style estimate,304,0.3,82.4,0,0.2,82.1,4,0
+med_chickpea_feta_salad_v1,chickpeas,chickpeas,protein,,curated,chickpeas cooked,360,g,360,served,per_100g,false,legume_base,true,true,,estimated,Curated USDA-style estimate,164,8.9,27.4,2.6,7.6,4.8,7,0.3
+med_chickpea_feta_salad_v1,tomato,tomato,vegetable,,curated,tomato raw,220,g,220,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_chickpea_feta_salad_v1,cucumber,cucumber,vegetable,,curated,cucumber raw,180,g,180,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,15,0.7,3.6,0.1,0.5,1.7,2,0
+med_chickpea_feta_salad_v1,feta,feta cheese,other,,curated,feta cheese,60,g,60,served,per_100g,false,dairy_base,true,false,milk,estimated,Curated USDA-style estimate,265,14,4,21,0,4,917,15
+med_chickpea_feta_salad_v1,olives,olives,healthy_fat,,curated,olives,40,g,40,served,per_100g,false,olive_base,true,true,,estimated,Curated USDA-style estimate,145,1,3.8,15.3,3.3,0.5,872,2.0
+med_chickpea_feta_salad_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,25,g,25,served,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_chickpea_feta_salad_v1,red_onion,red onion,vegetable,,curated,onion raw,60,g,60,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_chickpea_feta_salad_v1,lemon,lemon,fruit,,curated,lemon juice,35,g,35,served,per_100g,false,acid_base,true,true,,estimated,Curated USDA-style estimate,22,0.4,6.9,0.2,0.3,2.5,1,0
+med_chickpea_feta_salad_v1,oregano,oregano,seasoning,,curated,oregano dried,2,g,2,served,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,265,9,69,4.3,42,4,25,1.6

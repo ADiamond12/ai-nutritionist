@@ -8,6 +8,7 @@ from ai_nutritionist.constants import (
     FOOD_CATALOG_FILENAME,
     MEDITERRANEAN_CATALOG_FILENAME,
 )
+from ai_nutritionist.recipes import RECIPE_DATA_DIRNAME, load_recipe_tables, project_recipes_to_catalog
 
 
 def resolve_data_path(filename: str, data_dir: Path | str | None = None) -> Path:
@@ -18,13 +19,18 @@ def resolve_data_path(filename: str, data_dir: Path | str | None = None) -> Path
     return path
 
 
-def load_food_catalog(data_dir: Path | str | None = None) -> pd.DataFrame:
+def load_food_catalog(data_dir: Path | str | None = None, *, include_recipes: bool = True) -> pd.DataFrame:
     base_dir = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
     df = pd.read_csv(resolve_data_path(FOOD_CATALOG_FILENAME, data_dir))
     mediterranean_path = (base_dir / MEDITERRANEAN_CATALOG_FILENAME).resolve()
     if mediterranean_path.exists():
         mediterranean_df = pd.read_csv(mediterranean_path)
         df = pd.concat([df, mediterranean_df], ignore_index=True)
+    recipe_dir = (base_dir / RECIPE_DATA_DIRNAME).resolve()
+    if include_recipes and recipe_dir.exists():
+        recipe_catalog = project_recipes_to_catalog(load_recipe_tables(recipe_dir), statuses={"reviewed"})
+        if not recipe_catalog.empty:
+            df = pd.concat([df, recipe_catalog], ignore_index=True)
 
     missing = set(CATALOG_COLUMNS) - set(df.columns)
     if missing:

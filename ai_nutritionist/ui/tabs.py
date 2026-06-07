@@ -1,7 +1,12 @@
 import pandas as pd
 import streamlit as st
 
-from ai_nutritionist.plan_outputs import build_grocery_list, grocery_list_csv
+from ai_nutritionist.plan_outputs import (
+    build_grocery_list,
+    build_recipe_ingredient_grocery_list_for_plan,
+    grocery_list_csv,
+)
+from ai_nutritionist.recipes import recipe_ingredient_grocery_csv
 from ai_nutritionist.ui.components import catalog, feedback_widget, items_frame, progress_row
 from ai_nutritionist.ui.config import DIETARY_PATTERNS
 from ai_nutritionist.ui.state import feedback_avoid_terms, feedback_csv
@@ -174,6 +179,18 @@ def render_grocery_tab(result, weekly_result) -> None:
         mime="text/csv",
         width="stretch",
     )
+    ingredient_grocery_list = build_recipe_ingredient_grocery_list_for_plan(source)
+    if ingredient_grocery_list:
+        st.markdown("#### Recipe ingredients")
+        st.caption("Ingredient details are informational and not allergy-safety guidance.")
+        st.dataframe(pd.DataFrame(ingredient_grocery_list), hide_index=True, width="stretch")
+        st.download_button(
+            "Download recipe ingredients CSV",
+            data=recipe_ingredient_grocery_csv(ingredient_grocery_list),
+            file_name="ai_nutritionist_recipe_ingredients.csv",
+            mime="text/csv",
+            width="stretch",
+        )
 
 
 def render_feedback_tab() -> None:

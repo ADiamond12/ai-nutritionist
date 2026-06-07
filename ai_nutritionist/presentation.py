@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any
 
-from ai_nutritionist.plan_outputs import build_grocery_list
+from ai_nutritionist.plan_outputs import build_grocery_list, build_recipe_ingredient_grocery_list_for_plan
 from ai_nutritionist.recommender import MealRecommendation, RecommendationResult, WeeklyRecommendationResult
 
 
@@ -29,6 +29,7 @@ def public_daily_payload(result: RecommendationResult) -> dict[str, Any]:
         "preferences": result.preferences,
         "meals": [_public_meal(meal) for meal in result.meals],
         "grocery_list": build_grocery_list(result),
+        "recipe_ingredient_grocery_list": build_recipe_ingredient_grocery_list_for_plan(result),
     }
 
 
@@ -52,6 +53,7 @@ def public_weekly_payload(result: WeeklyRecommendationResult) -> dict[str, Any]:
             for day in result.days
         ],
         "grocery_list": build_grocery_list(result),
+        "recipe_ingredient_grocery_list": build_recipe_ingredient_grocery_list_for_plan(result),
     }
 
 

@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This document defines the next data milestone for AI Nutritionist: moving from a flat food catalog toward ingredient-level recipe decomposition without pretending that the current repository already contains a production recipe database.
+This document defines the ingredient-level recipe data milestone for AI Nutritionist: moving from a flat food catalog toward recipe decomposition without pretending that the current repository contains a broad production recipe database.
 
-The current planner is still valid as a general wellness recommender over catalog rows. Some rows are atomic foods, some are meal components, and some are opaque prepared dishes. This contract describes the next schema and validation layer required before the project can truthfully expand generated meals into ingredient-level recipes and ingredient-level grocery lists.
+The current planner is still valid as a general wellness recommender over catalog rows. Some rows are atomic foods, some are meal components, and some are opaque prepared dishes. The repository now includes a tiny fixture-backed validation layer and a five-recipe curated Mediterranean pilot; only those reviewed recipe-backed rows can be expanded into ingredient-level grocery lists.
 
 This is a product/data engineering contract, not medical validation. It must not be used to claim clinical accuracy, allergy safety, guaranteed nutrition adequacy, or therapeutic diet planning.
 
@@ -53,7 +53,7 @@ Design implications for this project:
 
 ## Contract Files
 
-The recommended future layout is:
+The implemented layout is:
 
 ```text
 data/
@@ -70,7 +70,7 @@ tests/
       recipe_sources.csv
 ```
 
-The `data/recipes` files are the optional curated recipe layer. The `tests/fixtures/recipes` files are deterministic fixture data for contract tests and should be tiny, public-safe, and hand-auditable.
+The `data/recipes` files are the optional curated recipe pilot layer. The `tests/fixtures/recipes` files are deterministic fixture data for contract tests and should stay tiny, public-safe, and hand-auditable.
 
 No private user feedback, personal health data, private PDFs, ZIP archives, or scraped proprietary recipe text belongs in these files.
 
@@ -131,6 +131,14 @@ No private user feedback, personal health data, private PDFs, ZIP archives, or s
 | `contains_allergen_tags` | string list | yes | Conservative tags, blank only after review. |
 | `mapping_confidence` | enum | yes | `exact`, `close`, `estimated`, or `fixture`. |
 | `mapping_notes` | string | no | Short data-quality note. |
+| `calories_per_100g` | float | yes for required ingredients | Source calories normalized to 100g. |
+| `protein_g_per_100g` | float | yes for required ingredients | Source protein normalized to 100g. |
+| `carbohydrate_g_per_100g` | float | yes for required ingredients | Source carbohydrate normalized to 100g. |
+| `fat_g_per_100g` | float | yes for required ingredients | Source fat normalized to 100g. |
+| `fiber_g_per_100g` | float | yes for required ingredients | Source fiber normalized to 100g. |
+| `sugars_g_per_100g` | float | yes for required ingredients | Source total sugars normalized to 100g. |
+| `sodium_mg_per_100g` | float | yes for required ingredients | Source sodium normalized to 100g. |
+| `saturated_fat_g_per_100g` | float | yes for required ingredients | Source saturated fat normalized to 100g. |
 
 ## Source Entity
 
@@ -237,32 +245,31 @@ This preserves current ranker/planner behavior while making ingredient details a
 
 ## Migration Path
 
-Phase 0: Contract only
+Phase 0: Contract only - complete
 
 - Add this document.
-- Do not add production recipe rows.
 - Keep current recommender behavior unchanged.
 
-Phase 1: Fixture schema and pure aggregation
+Phase 1: Fixture schema and pure aggregation - complete
 
 - Add tiny deterministic fixture CSVs under `tests/fixtures/recipes`.
 - Implement schema validation and nutrient aggregation functions.
 - Test per-serving nutrient math, missing-nutrient rejection, dietary flag derivation, allergen union, and projection into `CATALOG_COLUMNS`.
 
-Phase 2: Curated Mediterranean recipe pilot
+Phase 2: Curated Mediterranean recipe pilot - implemented as a small reviewed pilot
 
-- Convert a small number of existing curated Mediterranean rows into reviewed recipe-backed entries.
-- Keep original flat rows available until parity checks pass.
-- Add a migration report showing old flat nutrients versus recipe-aggregated nutrients and explaining acceptable deltas.
+- Add a small number of reviewed recipe-backed Mediterranean entries under `data/recipes`.
+- Keep original flat rows available.
+- Treat recipe-pilot nutrients as curated estimates and document that this is not a broad production recipe corpus.
 
-Phase 3: Runtime integration
+Phase 3: Runtime integration - partial
 
 - Add optional loader support for recipe-backed projected rows.
 - Keep the public default deterministic and local.
-- Expose ingredient-level grocery lists only for recipe-backed meals.
+- Expose ingredient-level grocery lists only for selected recipe-backed meals.
 - Preserve current public API score-hiding behavior.
 
-Phase 4: Reviewer proof
+Phase 4: Reviewer proof - ongoing
 
 - Add tests for recipe-backed recommendations, grocery-list ingredient grouping, dietary filters, and public payload shape.
 - Refresh docs/screenshots only after verified UI behavior exists.
@@ -289,11 +296,11 @@ Initial contract tests should verify:
 - projection output contains every `CATALOG_COLUMNS` field;
 - projected recipe rows do not expose private notes or internal review metadata in public API payloads.
 
-Do not add placeholder tests that assert future files exist before the implementation plan is approved. The first implementation PR should add fixtures and tests together.
+Do not add placeholder tests that assert future broad recipe files exist before the implementation plan is approved.
 
 ## Acceptance Gates For The Next Implementation PR
 
-The next PR that implements this contract should pass:
+Changes to this recipe layer should pass:
 
 - `ruff check .`
 - `mypy ai_nutritionist`
@@ -314,11 +321,11 @@ Additional recipe-specific acceptance gates:
 
 ## Non-Goals
 
-- No production recipe data in this contract-only milestone.
+- No broad production recipe corpus in this milestone.
 - No scraping proprietary recipe websites.
 - No user-generated recipe persistence.
 - No clinical meal-plan validation.
 - No allergy-safe claims.
 - No therapeutic keto claims.
-- No hosted-demo or Docker-runtime claims.
+- No hosted-demo claims from the recipe layer. Docker-runtime claims must be separately verified outside the recipe data contract.
 - No mandatory OpenAI, USDA API, or paid-provider dependency.

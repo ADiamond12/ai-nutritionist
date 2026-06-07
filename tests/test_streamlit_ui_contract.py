@@ -45,8 +45,11 @@ def test_streamlit_exposes_grocery_list_export_without_internal_scores():
 
     assert "Grocery List" in app_source
     assert "Download grocery CSV" in app_source
+    assert "Download recipe ingredients CSV" in app_source
     assert "build_grocery_list" in app_source
     assert "grocery_list_csv" in app_source
+    assert "build_recipe_ingredient_grocery_list_for_plan" in app_source
+    assert "recipe_ingredient_grocery_csv" in app_source
 
 
 def test_streamlit_shows_public_planner_summary_without_internal_objective():
