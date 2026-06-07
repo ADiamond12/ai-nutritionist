@@ -20,6 +20,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - [docs/GUIDELINE_ALIGNMENT.md](docs/GUIDELINE_ALIGNMENT.md) maps public nutrition guidance to code-level guardrails and caveats.
 - [docs/EVALUATION.md](docs/EVALUATION.md) records the runnable product-quality evaluation matrix.
 - [docs/HYBRID_RECOMMENDER_V2.md](docs/HYBRID_RECOMMENDER_V2.md) explains complete-day optimization, hard-limit preservation, and paired benchmark evidence.
+- [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md) defines the next ingredient-level recipe data milestone.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) outlines package modules, data flow, ranking, and feedback handling.
 - [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md) and [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md) document hosted deployment setup.
 - [SECURITY.md](SECURITY.md) documents supported reporting and the local-first privacy boundary.
@@ -211,6 +212,8 @@ For Streamlit Community Cloud, point the app to `app.py` and install from `requi
 The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. The full USDA archive is not committed.
 
 The current combined export contains 2,049 rows: 2,014 USDA/FNDDS-derived rows plus 35 curated Mediterranean/Greek rows. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
+
+The next data milestone is documented in [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md). It defines how ingredient-level recipes should be represented, validated, aggregated, and migrated without inventing production recipe data.
 
 Rebuild the processed catalog and Hugging Face-compatible CSV export:
 

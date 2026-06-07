@@ -50,6 +50,7 @@ Generated grocery lists are derived from recommendation outputs at runtime. They
 - The curated Mediterranean extension uses estimated USDA-style components.
 - Atomic foods, mixed dishes, and curated complete dishes currently share one flat catalog schema. The system therefore treats outputs as plate compositions and cannot truthfully expand opaque dishes into ingredient-level recipes.
 - Current grocery lists aggregate selected catalog rows, not validated recipe ingredients.
+- The next ingredient-level recipe milestone is specified in `docs/RECIPE_DATA_CONTRACT.md`; it is a future data-engineering contract, not evidence that production recipe data already exists.
 - Total sugars are not added sugars.
 - Vegetarian, vegan, and minimally processed flags are project heuristics.
 - The catalog does not encode allergies, medications, budget, availability, cooking method, appetite, disease state, medical history, or clinician guidance.

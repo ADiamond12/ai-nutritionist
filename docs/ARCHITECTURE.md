@@ -61,6 +61,8 @@ The default planner retains the neural ranker as candidate generation and adds d
 
 Current catalog rows can represent atomic foods, components, or opaque prepared dishes. The planner treats them as plate compositions; it does not claim ingredient-level recipe decomposition.
 
+The next data milestone is defined in [RECIPE_DATA_CONTRACT.md](RECIPE_DATA_CONTRACT.md). It keeps the current flat catalog projection as the compatibility boundary while specifying recipe, ingredient, source, nutrition aggregation, sodium, allergen, dietary validation, and fixture-test expectations for a future implementation.
+
 ## Safety Posture
 
 The system provides general wellness nutrition suggestions only. It is not medical advice, does not diagnose or treat conditions, and avoids claims of clinical accuracy.
