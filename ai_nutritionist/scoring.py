@@ -18,7 +18,7 @@ class MealTarget:
 MEAL_FRACTIONS = {
     "Breakfast": 0.25,
     "Lunch": 0.35,
-    "Dinner": 0.35,
+    "Dinner": 0.40,
 }
 
 

@@ -10,6 +10,7 @@ def test_evaluation_matrix_reports_guidance_alignment_for_bmi_and_age_profiles()
     assert report.summary["profiles_with_produce_each_meal"] == len(report.rows)
     assert report.summary["profiles_with_structure_feasible"] == len(report.rows)
     assert report.summary["profiles_with_daily_sodium_guardrail"] == len(report.rows)
+    assert report.summary["profiles_with_sodium_guardrails"] == len(report.rows)
 
     labels = {row.bmi_category for row in report.rows}
     assert {"Underweight", "Normal", "Overweight", "Severely overweight"}.issubset(labels)
@@ -18,7 +19,7 @@ def test_evaluation_matrix_reports_guidance_alignment_for_bmi_and_age_profiles()
     assert any(row.dietary_pattern == "vegetarian" for row in report.rows)
     assert any(row.dietary_pattern == "keto_style" for row in report.rows)
     assert report.summary["average_calorie_delta_pct"] <= 12
-    assert report.summary["meal_sodium_pass_rate_pct"] >= 85
+    assert report.summary["meal_sodium_pass_rate_pct"] == 100.0
     assert all(row.calorie_delta_pct >= 0 for row in report.rows)
     assert all(row.protein_coverage_pct >= 80 for row in report.rows)
     assert all(row.fiber_coverage_pct >= 70 for row in report.rows)

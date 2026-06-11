@@ -19,7 +19,7 @@ The project uses public guidance as product constraints, not as proof of medical
 | Prioritize whole, healthy, nutritious foods | `ai_nutritionist.guidelines` defines real-food guardrails; the ranker rewards minimally processed rows and practical meal groups. | Processing is inferred from catalog/category rules, not a full processing classification model. |
 | Vegetables, fruits, fiber-rich foods | Meal checks require produce presence and reward fiber-rich foods. Daily fiber target uses 25-30 g depending on profile. | This does not prove full micronutrient adequacy or exact produce grams. |
 | Saturated fat | Profile targets cap saturated fat at 10% of target calories. | This is a general wellness guardrail, not lipid-management care. |
-| Sodium | The app uses a 2,300 mg daily sodium guardrail and documents sodium misses in evaluation. WHO's adult reference is stricter at about 2,000 mg sodium. | USDA prepared-food rows can be sodium-heavy; misses are surfaced rather than hidden. |
+| Sodium | The app uses a 2,300 mg daily sodium guardrail and reports meal/daily sodium pass rates in evaluation. WHO's adult reference is stricter at about 2,000 mg sodium. | USDA prepared-food rows can be sodium-heavy; any misses are surfaced rather than hidden. |
 | Sugars | Total sugar is used as a cautious proxy signal at 10% of target calories. | USDA total sugars are not equivalent to free or added sugars. |
 | Mediterranean-style pattern | Weekly Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, fruit, and olive-oil sides. | This is food-culture/product framing, not a therapeutic prescription. |
 

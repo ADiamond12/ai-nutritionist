@@ -31,7 +31,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 97 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 99 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does

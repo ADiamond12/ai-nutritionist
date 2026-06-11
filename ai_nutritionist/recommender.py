@@ -72,6 +72,21 @@ LOW_PRACTICALITY_STANDALONE_TERMS = (
     "dressing",
 )
 
+MEDITERRANEAN_NON_CORE_TERMS = (
+    "cassava",
+    "cereal",
+    "challah",
+    "chappatti",
+    "fufu",
+    "kumquat",
+    "passion fruit",
+    "roti",
+    "soybean",
+    "soybeans",
+    "starfruit",
+    "tortilla",
+)
+
 SCALABLE_NUTRIENT_KEYS = (
     "serving_grams",
     "calories",
@@ -649,6 +664,8 @@ def _build_meal(
         data_dir=str(data_dir) if data_dir is not None else None,
     )
     scored = apply_preferences(scored, preferences, meal_name=meal_name)
+    if dietary_pattern == "mediterranean":
+        scored = _filter_mediterranean_non_core_foods(scored)
     selected_rows: list[pd.Series] = []
     meal_used_fdc_ids: set[int] = set()
 
@@ -1037,6 +1054,16 @@ def _is_curated_mediterranean(row: pd.Series) -> bool:
 def _is_low_practicality_standalone(food_name: object) -> bool:
     text = str(food_name).lower()
     return any(term in text for term in LOW_PRACTICALITY_STANDALONE_TERMS)
+
+
+def _filter_mediterranean_non_core_foods(rows: pd.DataFrame) -> pd.DataFrame:
+    filtered = rows.loc[~rows["food_name"].map(_is_mediterranean_non_core_food)].reset_index(drop=True)
+    return filtered if not filtered.empty else rows
+
+
+def _is_mediterranean_non_core_food(food_name: object) -> bool:
+    text = str(food_name).lower()
+    return any(term in text for term in MEDITERRANEAN_NON_CORE_TERMS)
 
 
 def _overlaps_existing_dish_terms(selected_rows: list[pd.Series], candidate: pd.Series) -> bool:

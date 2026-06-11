@@ -81,6 +81,12 @@ def test_recommend_week_builds_varied_mediterranean_rotation_with_practical_food
     assert weekly.planner_summary.planner_mode == "hybrid_v2"
     assert weekly.planner_summary.substitutions >= 0
     assert weekly.planner_summary.portion_adjustments >= 0
+    assert not any("sodium" in note.lower() for note in weekly.planner_summary.remaining_constraints)
+    assert all(
+        meal.guidance_checks["sodium_within_meal_limit"]
+        for day in weekly.days
+        for meal in day.result.meals
+    )
 
     all_names = " ".join(
         item["food_name"].lower()
@@ -94,11 +100,49 @@ def test_recommend_week_builds_varied_mediterranean_rotation_with_practical_food
     assert "pumpkin seeds" not in all_names
     assert "flax seeds" not in all_names
     assert "sprouts" not in all_names
+    assert "cassava" not in all_names
+    assert "fufu" not in all_names
+    assert "starfruit" not in all_names
+    assert "kumquat" not in all_names
+    assert "passion fruit" not in all_names
+    assert "tortilla" not in all_names
+    assert "chappatti" not in all_names
+    assert "challah" not in all_names
+    assert "roti" not in all_names
+    assert "soybeans" not in all_names
+    assert "cereal" not in all_names
 
     assert weekly.weekly_averages["calories"] > 0
     assert weekly.variety_counts["poultry_days"] >= 1
     assert weekly.variety_counts["fish_days"] >= 2
     assert weekly.variety_counts["legume_days"] >= 2
+
+
+def test_mediterranean_daily_plan_avoids_non_core_global_fillers():
+    result = recommend(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        activity="moderate",
+        dietary_pattern="mediterranean",
+        weight_goal="lose",
+        top_k=3,
+    )
+
+    names = " ".join(item["food_name"].lower() for meal in result.meals for item in meal.items)
+
+    assert "cassava" not in names
+    assert "fufu" not in names
+    assert "starfruit" not in names
+    assert "kumquat" not in names
+    assert "passion fruit" not in names
+    assert "tortilla" not in names
+    assert "chappatti" not in names
+    assert "challah" not in names
+    assert "roti" not in names
+    assert "soybeans" not in names
+    assert "cereal" not in names
 
 
 def test_legacy_weekly_planner_summary_rolls_up_daily_baseline_mode():

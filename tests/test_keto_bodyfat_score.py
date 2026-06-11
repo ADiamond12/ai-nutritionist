@@ -38,6 +38,7 @@ def test_keto_style_plan_limits_carbs_and_uses_fat_forward_food_groups():
         groups = {item["food_group"] for item in meal.items}
         assert "whole_grain" not in groups
         assert meal.guidance_checks["carbs_within_meal_limit"]
+        assert meal.guidance_checks["sodium_within_meal_limit"]
         assert meal.quality_score >= 98
 
 

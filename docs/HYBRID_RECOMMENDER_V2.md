@@ -55,8 +55,8 @@ The current 9-profile paired benchmark reports:
 
 | Metric | Legacy | Hybrid V2 |
 | --- | ---: | ---: |
-| Average calorie-target delta | 8.1% | 2.7% |
-| Meal-level sodium pass rate | 74.1% | 96.3% |
+| Average calorie-target delta | 7.6% | 1.7% |
+| Meal-level sodium pass rate | 81.5% | 100.0% |
 | Daily sodium pass rate | 100.0% | 100.0% |
 | Structural feasibility rate | 100.0% | 100.0% |
 
@@ -64,4 +64,4 @@ See [EVALUATION.md](EVALUATION.md) for definitions and interpretation.
 
 ## Current Boundary
 
-The current catalog mixes atomic foods, meal components, and opaque prepared dishes in one flat schema. Hybrid V2 therefore optimizes practical plate compositions; it does not claim ingredient-level recipe decomposition or clinical diet optimization.
+The current catalog mixes atomic foods, meal components, opaque prepared dishes, and a small reviewed recipe-backed pilot in one flat runtime schema. Hybrid V2 therefore optimizes practical plate compositions; it does not claim broad ingredient-level recipe decomposition beyond the reviewed pilot or clinical diet optimization.

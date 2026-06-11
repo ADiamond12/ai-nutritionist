@@ -150,7 +150,7 @@ def plan_objective(
             objective += 9 * _distance(totals["calories"], target.calories)
             objective += 8 * _shortfall(totals["protein_g"], target.protein_g)
             objective += 7 * _shortfall(totals["fiber_g"], target.fiber_g)
-            objective += 16 * _excess(totals["sodium_mg"], target.sodium_mg_limit)
+            objective += 48 * _excess(totals["sodium_mg"], target.sodium_mg_limit)
             objective += 12 * _excess(totals["saturated_fat_g"], target.saturated_fat_g_limit)
             objective += 9 * _excess(_effective_meal_sugars(meal), target.sugars_g_limit)
 
@@ -175,7 +175,7 @@ def _goal_focus_objective(daily: dict[str, float], targets: DailyTargets, goal_f
     if goal_focus == "higher_fiber":
         return -8 * _ratio(daily["fiber_g"], targets.fiber_g)
     if goal_focus == "lighter_meals":
-        return 8 * _ratio(daily["calories"], targets.calories)
+        return 18 * _ratio(daily["calories"], targets.calories)
     return 0.0
 
 

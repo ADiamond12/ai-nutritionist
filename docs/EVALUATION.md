@@ -14,8 +14,8 @@ The current 9-profile matrix covers underweight, normal, overweight, severely ov
 
 | Metric | Legacy | Hybrid V2 |
 | --- | ---: | ---: |
-| Average calorie-target delta | 8.1% | 2.7% |
-| Meal-level sodium pass rate | 74.1% | 96.3% |
+| Average calorie-target delta | 7.6% | 1.7% |
+| Meal-level sodium pass rate | 81.5% | 100.0% |
 | Daily sodium pass rate | 100.0% | 100.0% |
 | Structural feasibility rate | 100.0% | 100.0% |
 | Profiles changed by Hybrid V2 | n/a | 9/9 |

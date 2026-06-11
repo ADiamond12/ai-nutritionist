@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ai_nutritionist.profile import build_profile
-from ai_nutritionist.scoring import score_foods
+from ai_nutritionist.scoring import MEAL_FRACTIONS, meal_target, score_foods
 
 
 def test_profile_targets_shift_with_bmi_and_age():
@@ -73,6 +73,16 @@ def test_explicit_lose_goal_uses_bounded_deficit_for_large_profiles():
     assert 2500 <= lose.daily_targets.calories <= 2650
     assert maintain.daily_targets.calories - lose.daily_targets.calories >= 500
     assert maintain.daily_targets.calories - lose.daily_targets.calories <= 900
+
+
+def test_meal_targets_allocate_full_daily_budget_across_meals():
+    profile = build_profile(weight_kg=75, height_cm=180, age=30, sex="male", activity="moderate")
+
+    assert sum(MEAL_FRACTIONS.values()) == 1.0
+
+    meal_targets = [meal_target(profile, meal_name) for meal_name in ("Breakfast", "Lunch", "Dinner")]
+    assert sum(target.calories for target in meal_targets) == profile.daily_targets.calories
+    assert sum(target.sodium_mg_limit for target in meal_targets) == profile.daily_targets.sodium_mg_limit
 
 
 def test_scoring_prefers_fiber_rich_lower_sodium_foods_when_otherwise_similar():
