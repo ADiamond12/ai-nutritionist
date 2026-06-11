@@ -12,9 +12,9 @@ COPY ai_nutritionist ./ai_nutritionist
 COPY data ./data
 COPY app.py cli.py ./
 
-RUN python -m pip install --upgrade pip \
-    && python -m pip install -r requirements.txt \
-    && python -m pip install -e .
+RUN python -m pip install --upgrade --no-cache-dir pip \
+    && python -m pip install --no-cache-dir -r requirements.txt \
+    && python -m pip install --no-cache-dir .
 
 EXPOSE 8501
 

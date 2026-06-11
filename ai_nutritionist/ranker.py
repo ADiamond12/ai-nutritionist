@@ -129,7 +129,7 @@ def rank_foods_with_neural_model(
     return ranked.sort_values(["score", "protein_g", "fiber_g"], ascending=[False, False, False]).reset_index(drop=True)
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=1)
 def get_neural_ranker(data_dir: str | None = None) -> NeuralRanker:
     catalog = load_food_catalog(data_dir)
     training_foods = catalog

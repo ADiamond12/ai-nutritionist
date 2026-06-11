@@ -84,3 +84,37 @@ jobs:
             echo "possible secret pattern found"
             exit 1
           fi
+
+  docker-runtime:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: docker build -t ai-nutritionist:ci .
+
+      - name: Start Docker container
+        run: docker run --rm -d --name ai-nutritionist-ci -p 8501:8501 ai-nutritionist:ci
+
+      - name: Wait for Streamlit health endpoint
+        shell: bash
+        run: |
+          for attempt in {1..60}; do
+            if python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3).read()" >/dev/null 2>&1; then
+              echo "Streamlit health endpoint is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs ai-nutritionist-ci
+          exit 1
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker logs ai-nutritionist-ci || true
+
+      - name: Stop Docker container
+        if: always()
+        run: docker stop ai-nutritionist-ci || true

@@ -31,7 +31,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 95 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Docker runtime health check, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 97 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -202,13 +202,13 @@ The container starts Streamlit on `0.0.0.0:8501`, includes a Dockerfile `HEALTHC
 python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health').read().decode())"
 ```
 
-Latest local Docker proof used `docker build -t ai-nutritionist:recipe-pilot .`, ran the container with host port `8502`, and received `ok` from `/_stcore/health`.
+The GitHub Actions workflow also builds the Docker image, starts it, and polls `/_stcore/health` so Docker runtime readiness is checked on every push and pull request.
 
 ## Deployment Notes
 
-The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
+The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Docker Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
 
-For Streamlit Community Cloud, point the app to `app.py` and install from `requirements.txt`; see [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md). For Hugging Face Spaces, use a Streamlit Space with `app.py` as the entry point and the committed CSV data files included in the repository; see [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md). No API keys or private model files are required.
+For Streamlit Community Cloud, point the app to `app.py`, install from `requirements.txt`, and keep `data/foods_catalog.csv`, `data/mediterranean_foods.csv`, and `data/recipes/` committed; see [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md). For Hugging Face Spaces, use the Docker Space template with `app_port: 8501` so it matches the repository `Dockerfile`; see [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md). No API keys or private model files are required.
 
 ## Data
 

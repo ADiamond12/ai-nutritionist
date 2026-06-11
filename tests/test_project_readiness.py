@@ -36,6 +36,11 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "pytest -q" in workflow_text
     assert "python -m ai_nutritionist.evaluation" in workflow_text
     assert "--weekly" in workflow_text
+    assert "docker build -t ai-nutritionist:ci ." in workflow_text
+    assert "docker run --rm -d --name ai-nutritionist-ci -p 8501:8501 ai-nutritionist:ci" in workflow_text
+    assert "http://127.0.0.1:8501/_stcore/health" in workflow_text
+    assert "docker logs ai-nutritionist-ci" in workflow_text
+    assert "docker stop ai-nutritionist-ci" in workflow_text
     assert "forbidden artifact" in workflow_text
 
     docker_text = dockerfile.read_text(encoding="utf-8")
@@ -43,6 +48,8 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "EXPOSE 8501" in docker_text
     assert "HEALTHCHECK" in docker_text
     assert "_stcore/health" in docker_text
+    assert "--no-cache-dir" in docker_text
+    assert "pip install -e ." not in docker_text
 
 
 def test_repo_has_security_and_deployment_automation_files():
@@ -50,15 +57,50 @@ def test_repo_has_security_and_deployment_automation_files():
     codeql = ROOT / ".github" / "workflows" / "codeql.yml"
     streamlit_config = ROOT / ".streamlit" / "config.toml"
     hf_space = ROOT / "docs" / "deployment" / "huggingface-space-README.md"
+    streamlit_cloud = ROOT / "docs" / "deployment" / "STREAMLIT_COMMUNITY_CLOUD.md"
 
     assert dependabot.exists()
     assert codeql.exists()
     assert streamlit_config.exists()
     assert hf_space.exists()
+    assert streamlit_cloud.exists()
 
     assert "package-ecosystem: \"pip\"" in dependabot.read_text(encoding="utf-8")
     assert "github/codeql-action/analyze" in codeql.read_text(encoding="utf-8")
-    assert "sdk: streamlit" in hf_space.read_text(encoding="utf-8")
+    hf_space_text = hf_space.read_text(encoding="utf-8")
+    assert "sdk: docker" in hf_space_text
+    assert "app_port: 8501" in hf_space_text
+    assert "data/recipes" in hf_space_text
+    assert ".env" in hf_space_text
+    assert "local feedback databases" in hf_space_text
+    assert "hosting platform" in hf_space_text
+
+    streamlit_cloud_text = streamlit_cloud.read_text(encoding="utf-8")
+    assert "data/foods_catalog.csv" in streamlit_cloud_text
+    assert "data/mediterranean_foods.csv" in streamlit_cloud_text
+    assert "data/recipes" in streamlit_cloud_text
+    assert "hosting platform" in streamlit_cloud_text
+
+
+def test_runtime_requirements_exclude_dev_only_dependencies():
+    requirements = {
+        line.split(">=", maxsplit=1)[0].split("==", maxsplit=1)[0].strip().lower()
+        for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    }
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    dev_dependencies = "\n".join(pyproject["project"]["optional-dependencies"]["dev"]).lower()
+
+    assert "pytest" not in requirements
+    assert "httpx" not in requirements
+    assert "pytest" in dev_dependencies
+    assert "httpx" in dev_dependencies
+
+
+def test_neural_ranker_cache_is_bounded_for_deployment_memory():
+    from ai_nutritionist.ranker import get_neural_ranker
+
+    assert get_neural_ranker.cache_info().maxsize == 1
 
 
 def test_model_and_data_cards_exist_and_are_linked_from_readme():

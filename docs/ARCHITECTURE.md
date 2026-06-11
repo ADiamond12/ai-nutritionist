@@ -36,7 +36,7 @@ This repository is maintained as a standalone public software project. It is not
 3. The processed catalog is written to `data/foods_catalog.csv` and mirrored to `data/huggingface/food_ranker_items.csv`.
 4. Runtime loading validates the catalog schema, merges `data/mediterranean_foods.csv` when present, projects reviewed `data/recipes/` rows into the same catalog schema, and converts numeric and boolean fields.
 5. A `NutritionProfile` is built from weight, height, age, sex, activity, explicit weight goal, and optional body-fat percentage.
-6. The neural ranker trains once per process from weak-supervised labels and is cached.
+6. The neural ranker trains once per process from weak-supervised labels and uses a single-entry in-process cache to avoid retaining multiple fitted pipelines in long-running deployments.
 7. Candidate foods are filtered by dietary pattern, meal tags, vegan/vegetarian/keto-style rules, meal context, and user avoid terms.
 8. Goal focus, Mediterranean practicality boosts, low-practicality garnish penalties, and preferred terms adjust ranking while the planner still enforces hard guardrails.
 9. Explicit weight-loss targets use a bounded deficit heuristic, then generated meals can be portion-scaled when they sit above the energy target.
