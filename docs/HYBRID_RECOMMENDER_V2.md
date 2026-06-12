@@ -55,8 +55,8 @@ The current 9-profile paired benchmark reports:
 
 | Metric | Legacy | Hybrid V2 |
 | --- | ---: | ---: |
-| Average calorie-target delta | 7.6% | 1.7% |
-| Meal-level sodium pass rate | 81.5% | 100.0% |
+| Average calorie-target delta | 7.8% | 1.7% |
+| Meal-level sodium pass rate | 92.6% | 100.0% |
 | Daily sodium pass rate | 100.0% | 100.0% |
 | Structural feasibility rate | 100.0% | 100.0% |
 

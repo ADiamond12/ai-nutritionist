@@ -31,7 +31,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 99 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 109 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -80,7 +80,7 @@ streamlit run app.py
 Open the local Streamlit URL and use a public-safe reviewer profile:
 
 - Daily screenshots: default 75 kg, 180 cm, age 30, Mediterranean / Greek, balanced focus, 4 items per meal.
-- Preference fields: avoid `chicken, walnuts`; prefer `beans, berries, oats`.
+- Preference fields: leave blank for baseline screenshots; preference behavior is covered by automated tests and can be demonstrated live.
 - Weekly screenshot: switch `Plan length` to `Weekly`, keep Mediterranean / Greek, then generate.
 - Mobile screenshot: capture the generated `Day Detail` tab at a phone-sized viewport.
 - Screenshot safety check: refresh any screenshot that shows `Plan Fit`, `Ranker:`, `quality_score`, or `neural_score`.
@@ -203,6 +203,8 @@ python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1
 ```
 
 The GitHub Actions workflow also builds the Docker image, starts it, and polls `/_stcore/health` so Docker runtime readiness is checked on every push and pull request.
+
+The Docker image installs runtime dependencies with `constraints-runtime.txt` and runs the Streamlit process as a non-root `app` user.
 
 ## Deployment Notes
 

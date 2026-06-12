@@ -12,6 +12,7 @@ Thumbs.db
 .coverage
 htmlcov/
 .local/
+.local_*
 build/
 dist/
 *.egg-info/

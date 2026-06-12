@@ -5,7 +5,7 @@ from ai_nutritionist.constants import SAFETY_DISCLAIMER
 from ai_nutritionist.recommender import recommend, recommend_week
 from ai_nutritionist.ui.components import hide_streamlit_chrome
 from ai_nutritionist.ui.config import DIETARY_PATTERNS, GOAL_FOCUS, WEIGHT_GOALS
-from ai_nutritionist.ui.state import feedback_avoid_terms, merge_terms, variation_terms, ensure_session_state
+from ai_nutritionist.ui.state import compatible_variation_terms, feedback_avoid_terms, merge_terms, ensure_session_state
 from ai_nutritionist.ui.tabs import (
     feedback_context,
     render_alternatives_tab,
@@ -64,8 +64,8 @@ def _render_sidebar() -> dict[str, object]:
     items_per_meal = st.slider("Items per meal", min_value=3, max_value=5, value=4)
 
     with st.expander("Preferences", expanded=True):
-        avoid_foods = st.text_input("Avoid foods", placeholder="chicken, walnuts")
-        preferred_foods = st.text_input("Prefer foods", placeholder="beans, berries, oats")
+        avoid_foods = st.text_input("Avoid foods", placeholder="Optional: foods to avoid")
+        preferred_foods = st.text_input("Prefer foods", placeholder="Optional: foods to prefer")
         st.caption("Separate terms with commas. Matching is conservative substring matching on USDA food names.")
 
     submitted = st.button("Generate meal plan", type="primary", width="stretch")
@@ -105,7 +105,7 @@ def _generate_plan(inputs: dict[str, object]) -> None:
     effective_avoid_terms = merge_terms(str(inputs["avoid_foods"]), feedback_avoid_terms())
     effective_preferred_terms = merge_terms(
         str(inputs["preferred_foods"]),
-        variation_terms(dietary_pattern, st.session_state.plan_variant),
+        compatible_variation_terms(dietary_pattern, st.session_state.plan_variant, effective_avoid_terms),
     )
 
     with st.spinner("Ranking USDA foods and building the meal plan..."):

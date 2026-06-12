@@ -33,6 +33,19 @@ def variation_terms(dietary_pattern: str, variant: int) -> tuple[str, ...]:
     return options[(variant - 1) % len(options)]
 
 
+def compatible_variation_terms(dietary_pattern: str, variant: int, avoid_terms: list[str]) -> tuple[str, ...]:
+    terms = variation_terms(dietary_pattern, variant)
+    avoided = merge_terms(avoid_terms)
+    if any(_terms_overlap(term, avoided) for term in terms):
+        return ()
+    return terms
+
+
+def _terms_overlap(term: str, avoided: list[str]) -> bool:
+    cleaned = term.strip().lower()
+    return any(cleaned in avoided_term or avoided_term in cleaned for avoided_term in avoided)
+
+
 def feedback_avoid_terms() -> list[str]:
     terms: list[str] = []
     for entry in st.session_state.feedback_log:

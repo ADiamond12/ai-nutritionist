@@ -6,7 +6,7 @@ Use this storyboard for a short public-safe walkthrough of the benchmark project
 
 1. Run `streamlit run app.py`.
 2. Enter a safe sample profile and generate recommendations.
-   Use non-conflicting preference terms such as avoid `chicken, walnuts` and prefer `beans, berries, oats`.
+   Keep preference fields blank for the baseline demo; use live preference edits only when intentionally demonstrating filtering.
 3. Start with the generated daily meal plan, not the empty state.
 4. Show the daily nutrition progress panel to explain constraints and targets.
 5. Switch to the weekly rotation view to show the planner can create a broader schedule.

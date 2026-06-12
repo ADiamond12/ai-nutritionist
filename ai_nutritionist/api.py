@@ -2,17 +2,20 @@ from __future__ import annotations
 
 from pathlib import Path
 from threading import Lock
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 import os
 
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field, StringConstraints
 import uvicorn
 
 from ai_nutritionist.constants import SAFETY_DISCLAIMER, SYSTEM_NAME
 from ai_nutritionist.feedback import FeedbackEntry, FeedbackStore
 from ai_nutritionist.presentation import public_daily_payload, public_weekly_payload
 from ai_nutritionist.recommender import recommend, recommend_week
+
+
+PreferenceTerm = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
 
 
 class RecommendationRequest(BaseModel):
@@ -25,8 +28,8 @@ class RecommendationRequest(BaseModel):
     body_fat_pct: float | None = Field(default=None, ge=5, le=60)
     weight_goal: Literal["auto", "maintain", "lose", "gain"] = "auto"
     goal_focus: Literal["balanced", "higher_protein", "higher_fiber", "lighter_meals", "lower_sodium"] = "balanced"
-    avoid_terms: list[str] = Field(default_factory=list)
-    preferred_terms: list[str] = Field(default_factory=list)
+    avoid_terms: list[PreferenceTerm] = Field(default_factory=list, max_length=20)
+    preferred_terms: list[PreferenceTerm] = Field(default_factory=list, max_length=20)
     top_k: int = Field(default=4, ge=3, le=5)
     planner_mode: Literal["legacy", "hybrid_v2"] = "hybrid_v2"
 
@@ -41,7 +44,7 @@ class FeedbackRequest(BaseModel):
     sentiment: Literal["liked", "not_liked"]
     dietary_pattern: str = Field(min_length=1, max_length=40)
     weight_goal: str = Field(min_length=1, max_length=40)
-    avoid_terms: list[str] = Field(default_factory=list, max_length=10)
+    avoid_terms: list[PreferenceTerm] = Field(default_factory=list, max_length=10)
 
 
 def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
@@ -53,6 +56,7 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
     resolved_feedback_db_path = (
         Path(feedback_db_path) if feedback_db_path is not None else _default_feedback_db_path()
     ).resolve()
+    feedback_readback_enabled = _env_flag("AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK")
     store: FeedbackStore | None = None
     store_lock = Lock()
 
@@ -87,6 +91,14 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
 
     @app.get("/feedback")
     def list_feedback() -> dict[str, Any]:
+        if not feedback_readback_enabled:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Feedback readback is disabled by default. Set "
+                    "AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK=1 only for local review."
+                ),
+            )
         entries = feedback_store().list_entries()
         return {"count": len(entries), "entries": [entry.__dict__ for entry in entries]}
 
@@ -98,6 +110,10 @@ def _default_feedback_db_path() -> Path:
     if configured:
         return Path(configured)
     return Path(".local") / "feedback.sqlite"
+
+
+def _env_flag(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 app = create_app()

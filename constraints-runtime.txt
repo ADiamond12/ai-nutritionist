@@ -1,0 +1,8 @@
+# Direct runtime dependency pins used by Docker and CI to reduce deployment drift.
+# Keep broad compatibility ranges in pyproject.toml; refresh these pins after dependency updates.
+fastapi==0.120.0
+pandas==2.3.3
+pydantic==2.12.5
+scikit-learn==1.7.2
+streamlit==1.50.0
+uvicorn==0.38.0

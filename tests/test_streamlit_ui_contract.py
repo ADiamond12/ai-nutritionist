@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from ai_nutritionist.ui.state import compatible_variation_terms
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,3 +61,9 @@ def test_streamlit_shows_public_planner_summary_without_internal_objective():
     assert "Weekly planner:" in app_source
     assert "objective_score" not in app_source
     assert "plan_objective" not in app_source
+
+
+def test_streamlit_variation_terms_do_not_conflict_with_avoid_terms():
+    terms = compatible_variation_terms("mediterranean", 1, ["chicken", "walnuts"])
+
+    assert terms == ()

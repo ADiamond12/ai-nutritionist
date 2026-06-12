@@ -118,6 +118,66 @@ def test_recommend_week_builds_varied_mediterranean_rotation_with_practical_food
     assert weekly.variety_counts["legume_days"] >= 2
 
 
+def test_weekly_rotation_respects_avoid_terms_in_focus_labels():
+    weekly = recommend_week(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="male",
+        activity="moderate",
+        dietary_pattern="mediterranean",
+        avoid_terms=["chicken"],
+        preferred_terms=["beans", "berries", "oats"],
+        top_k=4,
+    )
+
+    names = " ".join(
+        item["food_name"].lower()
+        for day in weekly.days
+        for meal in day.result.meals
+        for item in meal.items
+    )
+
+    assert "chicken" not in names
+    assert "souvlaki" not in names
+    assert all(day.rotation_focus != "poultry" for day in weekly.days)
+    assert weekly.variety_counts["poultry_days"] == 0
+
+
+def test_default_weekly_profile_has_no_meal_sodium_notes():
+    weekly = recommend_week(
+        weight_kg=75,
+        height_cm=180,
+        age=30,
+        sex="unspecified",
+        activity="moderate",
+        dietary_pattern="mediterranean",
+        top_k=4,
+    )
+
+    assert not any("sodium" in note.lower() for note in weekly.planner_summary.remaining_constraints)
+    assert all(
+        meal.guidance_checks["sodium_within_meal_limit"]
+        for day in weekly.days
+        for meal in day.result.meals
+    )
+
+
+def test_documented_weekly_weight_loss_profile_has_no_planner_notes():
+    weekly = recommend_week(
+        weight_kg=125,
+        height_cm=200,
+        age=30,
+        sex="male",
+        activity="moderate",
+        dietary_pattern="mediterranean",
+        weight_goal="lose",
+        top_k=3,
+    )
+
+    assert weekly.planner_summary.remaining_constraints == ()
+
+
 def test_mediterranean_daily_plan_avoids_non_core_global_fillers():
     result = recommend(
         weight_kg=75,

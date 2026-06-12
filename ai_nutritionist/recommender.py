@@ -493,10 +493,11 @@ def recommend_week(
         raise ValueError("days must be between 1 and 14")
 
     rotation = _weekly_rotation_for_pattern(dietary_pattern)
+    normalized_avoid_terms = _merge_terms(avoid_terms, ())
     planned_days: list[WeeklyDayRecommendation] = []
     for day_index in range(days):
         day_name = WEEK_DAY_NAMES[day_index % len(WEEK_DAY_NAMES)]
-        rotation_focus, rotation_terms = rotation[day_index % len(rotation)]
+        rotation_focus, rotation_terms = _compatible_rotation(rotation, day_index, normalized_avoid_terms)
         day_preferences = _merge_terms(preferred_terms, rotation_terms)
         result = recommend(
             weight_kg=weight_kg,
@@ -570,6 +571,27 @@ def _weekly_rotation_for_pattern(dietary_pattern: str) -> tuple[tuple[str, tuple
             ("dairy", ("cottage cheese", "cheese")),
         )
     return GENERIC_WEEK_ROTATION
+
+
+def _compatible_rotation(
+    rotation: tuple[tuple[str, tuple[str, ...]], ...],
+    day_index: int,
+    avoid_terms: list[str],
+) -> tuple[str, tuple[str, ...]]:
+    for offset in range(len(rotation)):
+        rotation_focus, rotation_terms = rotation[(day_index + offset) % len(rotation)]
+        if not _rotation_conflicts_with_avoid_terms(rotation_terms, avoid_terms):
+            return rotation_focus, rotation_terms
+    return "balanced", ()
+
+
+def _rotation_conflicts_with_avoid_terms(rotation_terms: tuple[str, ...], avoid_terms: list[str]) -> bool:
+    return any(_term_conflicts_with_avoid_terms(rotation_term, avoid_terms) for rotation_term in rotation_terms)
+
+
+def _term_conflicts_with_avoid_terms(term: str, avoid_terms: list[str]) -> bool:
+    cleaned = term.strip().lower()
+    return any(cleaned in avoid_term or avoid_term in cleaned for avoid_term in avoid_terms)
 
 
 def _merge_terms(base_terms: str | list[str] | None, extra_terms: tuple[str, ...]) -> list[str]:
@@ -860,8 +882,7 @@ def _row_fits_meal_guardrails(
     sugar_fraction = 2.5 if group == "fruit" else 1.8 if _is_curated_mediterranean(candidate) else 1.0
     if totals["sugars_g"] > target.sugars_g_limit * sugar_fraction:
         return False
-    sodium_fraction = 1.30 if _is_curated_mediterranean(candidate) else 1.02
-    if totals["sodium_mg"] > target.sodium_mg_limit * sodium_fraction:
+    if totals["sodium_mg"] > target.sodium_mg_limit * 1.02:
         return False
     if totals["saturated_fat_g"] > target.saturated_fat_g_limit * 1.05:
         return False

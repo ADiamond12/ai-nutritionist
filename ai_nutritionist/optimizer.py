@@ -136,7 +136,7 @@ def plan_objective(
     objective = 0.0
 
     objective += 30 * _distance(daily["calories"], daily_targets.calories)
-    objective += 28 * _shortfall(daily["protein_g"], daily_targets.protein_g)
+    objective += 42 * _shortfall(daily["protein_g"], daily_targets.protein_g)
     objective += 24 * _shortfall(daily["fiber_g"], daily_targets.fiber_g)
     objective += 30 * _excess(daily["sodium_mg"], daily_targets.sodium_mg_limit)
     objective += 24 * _excess(daily["saturated_fat_g"], daily_targets.saturated_fat_g_limit)
@@ -148,7 +148,7 @@ def plan_objective(
         target = meal_targets.get(meal.name)
         if target is not None:
             objective += 9 * _distance(totals["calories"], target.calories)
-            objective += 8 * _shortfall(totals["protein_g"], target.protein_g)
+            objective += 12 * _shortfall(totals["protein_g"], target.protein_g)
             objective += 7 * _shortfall(totals["fiber_g"], target.fiber_g)
             objective += 48 * _excess(totals["sodium_mg"], target.sodium_mg_limit)
             objective += 12 * _excess(totals["saturated_fat_g"], target.saturated_fat_g_limit)

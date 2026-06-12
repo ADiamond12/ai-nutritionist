@@ -30,6 +30,8 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert dockerignore.exists()
 
     workflow_text = workflow.read_text(encoding="utf-8")
+    assert "permissions:" in workflow_text
+    assert "contents: read" in workflow_text
     assert "python-version: [\"3.11\", \"3.12\"]" in workflow_text
     assert "ruff check" in workflow_text
     assert "mypy ai_nutritionist" in workflow_text
@@ -38,6 +40,7 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "--weekly" in workflow_text
     assert "docker build -t ai-nutritionist:ci ." in workflow_text
     assert "docker run --rm -d --name ai-nutritionist-ci -p 8501:8501 ai-nutritionist:ci" in workflow_text
+    assert "docker exec ai-nutritionist-ci id -u" in workflow_text
     assert "http://127.0.0.1:8501/_stcore/health" in workflow_text
     assert "docker logs ai-nutritionist-ci" in workflow_text
     assert "docker stop ai-nutritionist-ci" in workflow_text
@@ -49,7 +52,22 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "HEALTHCHECK" in docker_text
     assert "_stcore/health" in docker_text
     assert "--no-cache-dir" in docker_text
+    assert "USER app" in docker_text
     assert "pip install -e ." not in docker_text
+
+
+def test_deployment_constraints_are_used_by_ci_and_docker():
+    constraints = ROOT / "constraints-runtime.txt"
+    workflow_text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    docker_text = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    constraints_text = constraints.read_text(encoding="utf-8")
+
+    assert constraints.exists()
+    assert "-c constraints-runtime.txt" in workflow_text
+    assert "-c constraints-runtime.txt" in docker_text
+    assert "fastapi==" in constraints_text
+    assert "streamlit==" in constraints_text
+    assert "pytest" not in constraints_text.lower()
 
 
 def test_repo_has_security_and_deployment_automation_files():
@@ -97,6 +115,16 @@ def test_runtime_requirements_exclude_dev_only_dependencies():
     assert "httpx" in dev_dependencies
 
 
+def test_local_runtime_artifacts_are_ignored_and_scanned():
+    gitignore_text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    dockerignore_text = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+    workflow_text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert ".local_*" in gitignore_text
+    assert ".local_*" in dockerignore_text
+    assert "\\.pid$" in workflow_text
+
+
 def test_neural_ranker_cache_is_bounded_for_deployment_memory():
     from ai_nutritionist.ranker import get_neural_ranker
 
@@ -126,8 +154,8 @@ def test_streamlit_entrypoint_is_thin_and_ui_modules_exist():
 
     assert "from ai_nutritionist.ui.app import run_app" in app_source
     assert len(app_source.splitlines()) <= 5
-    assert "chicken, walnuts" in ui_source
-    assert "beans, berries, oats" in ui_source
+    assert "Optional: foods to avoid" in ui_source
+    assert "Optional: foods to prefer" in ui_source
     assert "fish, chicken, nuts" not in ui_source
     assert "salmon, beans, berries" not in ui_source
 
@@ -163,10 +191,11 @@ def test_public_screenshot_artifacts_and_refresh_guidance_are_current():
 
     for path in screenshot_dir.glob("*.png"):
         assert path.name in screenshot_readme
+        assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
     assert "default 75 kg, 180 cm, age 30" in screenshot_readme
-    assert "chicken, walnuts" in screenshot_readme
-    assert "beans, berries, oats" in screenshot_readme
+    assert "leave blank for baseline screenshots" in screenshot_readme
+    assert "preference behavior is covered by automated tests" in screenshot_readme
     assert "avoid `fish" not in screenshot_readme.lower()
     assert "prefer `salmon" not in screenshot_readme.lower()
     assert "Plan Fit" in screenshot_readme
