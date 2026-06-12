@@ -56,7 +56,9 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
     resolved_feedback_db_path = (
         Path(feedback_db_path) if feedback_db_path is not None else _default_feedback_db_path()
     ).resolve()
+    feedback_write_enabled = _env_flag("AI_NUTRITIONIST_ENABLE_API_FEEDBACK")
     feedback_readback_enabled = _env_flag("AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK")
+    feedback_max_entries = _feedback_max_entries()
     store: FeedbackStore | None = None
     store_lock = Lock()
 
@@ -65,7 +67,7 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
         if store is None:
             with store_lock:
                 if store is None:
-                    store = FeedbackStore(resolved_feedback_db_path)
+                    store = FeedbackStore(resolved_feedback_db_path, max_entries=feedback_max_entries)
         return store
 
     @app.get("/health")
@@ -86,6 +88,14 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
 
     @app.post("/feedback", status_code=201)
     def create_feedback(request: FeedbackRequest) -> dict[str, Any]:
+        if not feedback_write_enabled:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "API feedback writes are disabled by default. Set "
+                    "AI_NUTRITIONIST_ENABLE_API_FEEDBACK=1 only for local experiments."
+                ),
+            )
         count = feedback_store().add(FeedbackEntry(**request.model_dump()))
         return {"stored": True, "count": count}
 
@@ -99,6 +109,8 @@ def create_app(feedback_db_path: Path | str | None = None) -> FastAPI:
                     "AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK=1 only for local review."
                 ),
             )
+        if store is None and not resolved_feedback_db_path.exists():
+            return {"count": 0, "entries": []}
         entries = feedback_store().list_entries()
         return {"count": len(entries), "entries": [entry.__dict__ for entry in entries]}
 
@@ -114,6 +126,15 @@ def _default_feedback_db_path() -> Path:
 
 def _env_flag(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _feedback_max_entries() -> int:
+    raw_value = os.environ.get("AI_NUTRITIONIST_MAX_FEEDBACK_ENTRIES", "1000")
+    try:
+        value = int(raw_value)
+    except ValueError:
+        return 1000
+    return min(max(value, 1), 10_000)
 
 
 app = create_app()

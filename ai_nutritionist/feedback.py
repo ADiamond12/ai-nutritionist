@@ -38,14 +38,15 @@ class FeedbackEntry:
 
 
 class FeedbackStore:
-    def __init__(self, path: Path | str):
+    def __init__(self, path: Path | str, max_entries: int = 1000):
         self.path = Path(path)
+        self.max_entries = max(1, max_entries)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize()
 
     def add(self, entry: FeedbackEntry) -> int:
         normalized = entry.normalized()
-        with closing(sqlite3.connect(self.path)) as connection:
+        with closing(self._connect()) as connection:
             connection.execute(
                 """
                 INSERT INTO feedback
@@ -62,11 +63,12 @@ class FeedbackStore:
                     json.dumps(normalized.avoid_terms),
                 ),
             )
+            self._trim(connection)
             connection.commit()
             return int(connection.execute("SELECT COUNT(*) FROM feedback").fetchone()[0])
 
     def list_entries(self) -> list[FeedbackEntry]:
-        with closing(sqlite3.connect(self.path)) as connection:
+        with closing(self._connect()) as connection:
             rows = connection.execute(
                 """
                 SELECT timestamp_utc, scope, label, sentiment, dietary_pattern, weight_goal, avoid_terms_json
@@ -88,7 +90,7 @@ class FeedbackStore:
         ]
 
     def count(self) -> int:
-        with closing(sqlite3.connect(self.path)) as connection:
+        with closing(self._connect()) as connection:
             return int(connection.execute("SELECT COUNT(*) FROM feedback").fetchone()[0])
 
     def to_csv(self, entries: Iterable[FeedbackEntry] | None = None) -> str:
@@ -111,7 +113,7 @@ class FeedbackStore:
         return output.getvalue()
 
     def _initialize(self) -> None:
-        with closing(sqlite3.connect(self.path)) as connection:
+        with closing(self._connect()) as connection:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS feedback (
@@ -127,3 +129,22 @@ class FeedbackStore:
                 """
             )
             connection.commit()
+
+    def _connect(self) -> sqlite3.Connection:
+        connection = sqlite3.connect(self.path)
+        connection.execute("PRAGMA secure_delete = ON")
+        return connection
+
+    def _trim(self, connection: sqlite3.Connection) -> None:
+        connection.execute(
+            """
+            DELETE FROM feedback
+            WHERE id NOT IN (
+                SELECT id
+                FROM feedback
+                ORDER BY id DESC
+                LIMIT ?
+            )
+            """,
+            (self.max_entries,),
+        )

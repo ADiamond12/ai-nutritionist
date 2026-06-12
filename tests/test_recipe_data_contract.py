@@ -108,11 +108,37 @@ def test_default_catalog_includes_reviewed_recipe_projection_without_internal_me
     recipe_rows = catalog.loc[catalog["source"].str.contains("Recipe contract curated_estimate")]
 
     assert list(catalog.columns) == CATALOG_COLUMNS
-    assert len(recipe_rows) >= 5
+    assert len(recipe_rows) >= 9
     assert "recipe_id" not in catalog.columns
     assert "recipe_version" not in catalog.columns
     assert "recipe_allergen_tags" not in catalog.columns
     assert "Chicken souvlaki plate with Greek salad and pita" in set(recipe_rows["food_name"])
+    assert "Fasolada bean soup with tomato carrot and olive oil" in set(recipe_rows["food_name"])
+
+
+def test_runtime_recipe_pilot_adds_practical_greek_coverage_and_grocery_expansion():
+    tables = load_recipe_tables(Path(__file__).resolve().parents[1] / "data" / "recipes")
+    projected = project_recipes_to_catalog(tables, include_metadata=True, statuses={"reviewed"})
+    by_name = projected.set_index("food_name")
+
+    assert len(projected) >= 9
+    assert bool(by_name.loc["Fasolada bean soup with tomato carrot and olive oil", "vegan"]) is True
+    assert bool(by_name.loc["Gigantes beans with briam-style roasted vegetables", "vegan"]) is True
+    assert bool(by_name.loc["Cod plaki with tomato onion potatoes and herbs", "vegan"]) is False
+    assert bool(by_name.loc["Shrimp tomato orzo with spinach and feta", "vegetarian"]) is False
+
+    grocery = build_recipe_ingredient_grocery_list_from_items(
+        tables,
+        [
+            by_name.loc["Fasolada bean soup with tomato carrot and olive oil"].to_dict(),
+            by_name.loc["Cod plaki with tomato onion potatoes and herbs"].to_dict(),
+        ],
+    )
+
+    ingredient_names = {item["ingredient_name"] for item in grocery}
+    assert {"white beans", "cod", "olive oil", "crushed tomato"}.issubset(ingredient_names)
+    assert all("recipe_id" not in item for item in grocery)
+    assert all("neural_score" not in item for item in grocery)
 
 
 def test_recipe_grocery_can_be_built_from_projected_catalog_items_without_recipe_ids():

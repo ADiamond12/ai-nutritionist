@@ -31,7 +31,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - **First command:** `streamlit run app.py`
 - **Proof artifact:** generated daily and weekly meal-plan screenshots under `docs/screenshots/`.
 - **Visual proof:** start with `docs/screenshots/streamlit-meal-plan.png`, then show weekly rotation, daily nutrition progress, and swap alternatives.
-- **Validation:** 109 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
+- **Validation:** 113 pytest tests, paired legacy-versus-Hybrid-V2 evaluation, Dockerfile healthcheck plus Docker runtime CI gate, BMI/age/diet evaluation matrix, CLI/API smoke tests, lint/type automation, and Streamlit smoke testing.
 - **Current limitation:** this is a general wellness software system, not medical advice or clinical decision support.
 
 ## What It Does
@@ -57,7 +57,7 @@ The public version is a standalone software system, not a thesis, dissertation, 
 - Produces grouped grocery lists with CSV export for daily or weekly plans, plus ingredient-level CSV export when generated plans include recipe-backed pilot rows.
 - Exposes a FastAPI app with public-safe daily and weekly recommendation payloads that hide internal ranking scores.
 - Stores feedback only in the current Streamlit session by default; it can be exported as CSV, but it is not uploaded by the app.
-- Supports an optional local SQLite feedback store for API experiments. The store is initialized only when feedback endpoints are used; the default path is `.local/feedback.sqlite`, which is ignored by git.
+- Supports an opt-in local SQLite feedback store for API experiments. Feedback writes are disabled by default, and the store is initialized only when `AI_NUTRITIONIST_ENABLE_API_FEEDBACK=1` is set and `/feedback` is used; the default path is `.local/feedback.sqlite`, which is ignored by git.
 
 ## Screenshots
 
@@ -189,6 +189,8 @@ python -c "from fastapi.testclient import TestClient; from ai_nutritionist.api i
 
 The public API response includes plan data, nutrition totals, alternatives, and grocery lists. It intentionally excludes internal model scores and is still a wellness recommender, not medical advice.
 
+API feedback persistence is disabled by default. For local experiments only, set `AI_NUTRITIONIST_ENABLE_API_FEEDBACK=1` before calling `POST /feedback`; set `AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK=1` only when you need local readback through `GET /feedback`. The store defaults to `.local/feedback.sqlite`, can be overridden with `AI_NUTRITIONIST_FEEDBACK_DB`, and limits API-readable rows with `AI_NUTRITIONIST_MAX_FEEDBACK_ENTRIES`, default `1000`. The SQLite connection enables `secure_delete` before trimming old rows, but the database file and exported CSVs should still be treated as local user data and deleted when no longer needed.
+
 ## Docker
 
 ```bash
@@ -208,15 +210,15 @@ The Docker image installs runtime dependencies with `constraints-runtime.txt` an
 
 ## Deployment Notes
 
-The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Docker Spaces deployment. A hosted deployment is optional because the app handles profile inputs and local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
+The repository is ready for local, Docker, Streamlit Community Cloud, or Hugging Face Docker Spaces deployment. A hosted deployment is optional because the app handles profile inputs and session-local feedback. When deployed remotely, user profile inputs are processed by the hosting platform rather than only on the user's machine.
 
-For Streamlit Community Cloud, point the app to `app.py`, install from `requirements.txt`, and keep `data/foods_catalog.csv`, `data/mediterranean_foods.csv`, and `data/recipes/` committed; see [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md). For Hugging Face Spaces, use the Docker Space template with `app_port: 8501` so it matches the repository `Dockerfile`; see [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md). No API keys or private model files are required.
+For Streamlit Community Cloud, point the app to `app.py`, install from `requirements.txt`, and keep `data/foods_catalog.csv`, `data/mediterranean_foods.csv`, and `data/recipes/` committed; `requirements.txt` references `constraints-runtime.txt` to reduce dependency drift. See [docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md](docs/deployment/STREAMLIT_COMMUNITY_CLOUD.md). For Hugging Face Spaces, use the Docker Space template with `app_port: 8501` so it matches the repository `Dockerfile`; see [docs/deployment/huggingface-space-README.md](docs/deployment/huggingface-space-README.md). No API keys or private model files are required. Host the Streamlit UI as the public demo; do not expose the FastAPI service as a public production API without authentication, rate limiting, privacy policy, retention controls, and abuse controls.
 
 ## Data
 
-The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. `data/recipes/` adds a five-recipe ingredient-level Mediterranean pilot with curated-estimate nutrients and explicit source/review metadata. The full USDA archive is not committed.
+The committed base catalog at `data/foods_catalog.csv` is derived from USDA FoodData Central FNDDS 2021-2023 CSV data, release date October 2024. `data/mediterranean_foods.csv` adds a small curated Mediterranean/Greek extension with estimated nutrient values from USDA-style food components so the public app recommends recognizable meals rather than isolated high-scoring ingredients. `data/recipes/` adds a nine-recipe ingredient-level Mediterranean/Greek pilot with curated-estimate nutrients and explicit source/review metadata. The full USDA archive is not committed.
 
-The current runtime catalog contains 2,054 rows: 2,014 USDA/FNDDS-derived rows, 35 curated Mediterranean/Greek flat rows, and 5 recipe-backed pilot rows projected into the same catalog schema. The Hugging Face-compatible browsing export remains the 2,049-row flat catalog. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
+The current runtime catalog contains 2,058 rows: 2,014 USDA/FNDDS-derived rows, 35 curated Mediterranean/Greek flat rows, and 9 recipe-backed pilot rows projected into the same catalog schema. The Hugging Face-compatible browsing export remains the 2,049-row flat catalog. See [DATA_CARD.md](DATA_CARD.md) for provenance, schema, source posture, and known limitations.
 
 The recipe data layer is documented in [docs/RECIPE_DATA_CONTRACT.md](docs/RECIPE_DATA_CONTRACT.md). It defines how ingredient-level recipes are represented, validated, aggregated, projected, and migrated without claiming a broad production recipe corpus.
 
@@ -256,11 +258,11 @@ mypy ai_nutritionist
 pytest -q
 ```
 
-Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, recipe data validation/projection, ingredient grocery export, neural ranking reproducibility, Hybrid V2 determinism and hard-limit preservation, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, optional local feedback storage, alternatives, practical meal constraints, paired evaluation behavior, and CLI smoke behavior.
+Coverage includes BMI/category logic, explicit weight goals, bounded weight-loss calorie targets, body-fat protein targets, macro totals, USDA catalog schema, Mediterranean extension loading, recipe data validation/projection, ingredient grocery export, neural ranking reproducibility, Hybrid V2 determinism and hard-limit preservation, vegan filtering, keto-style filtering, preference-aware ranking, recommendation shape, weekly Mediterranean rotation, grocery-list output, public API payloads, local feedback UI contracts, opt-in bounded local feedback storage, alternatives, practical meal constraints, paired evaluation behavior, and CLI smoke behavior.
 
 ## Privacy And Security
 
-Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. API feedback experiments can use a local SQLite file under `.local/`, which is initialized only when the feedback endpoints are used and ignored by git. Treat exported CSVs and local feedback databases as user data and avoid committing them.
+Local runs do not upload profile inputs, generated plans, or feedback. Streamlit feedback is stored in `st.session_state` only unless the user downloads a CSV. API feedback experiments can use a bounded local SQLite file under `.local/`, but writes require `AI_NUTRITIONIST_ENABLE_API_FEEDBACK=1` and readback requires `AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK=1`. Treat exported CSVs and local feedback databases as user data, avoid committing them, and remove local copies when they are no longer needed.
 
 Do not enter sensitive medical details, diagnoses, medication information, allergy-critical requirements, or private health records. For security reporting and supported boundaries, see [SECURITY.md](SECURITY.md).
 

@@ -1,6 +1,6 @@
 # Recipe Pilot Data
 
-This folder contains a small reviewed recipe-backed pilot for AI Nutritionist.
+This folder contains a small nine-recipe reviewed recipe-backed pilot for AI Nutritionist.
 
 The rows are local, deterministic, and public-safe. They are ingredient-level curated estimates using USDA-style public nutrient references and project-defined portions. They are not clinical nutrition validation, allergy-safe proof, or a production recipe corpus.
 

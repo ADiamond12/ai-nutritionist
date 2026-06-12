@@ -37,6 +37,7 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "mypy ai_nutritionist" in workflow_text
     assert "pytest -q" in workflow_text
     assert "python -m ai_nutritionist.evaluation" in workflow_text
+    assert "python scripts/streamlit_smoke.py" in workflow_text
     assert "--weekly" in workflow_text
     assert "docker build -t ai-nutritionist:ci ." in workflow_text
     assert "docker run --rm -d --name ai-nutritionist-ci -p 8501:8501 ai-nutritionist:ci" in workflow_text
@@ -45,6 +46,7 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "docker logs ai-nutritionist-ci" in workflow_text
     assert "docker stop ai-nutritionist-ci" in workflow_text
     assert "forbidden artifact" in workflow_text
+    assert 'test "$(docker exec ai-nutritionist-ci id -u)" = "1000"' in workflow_text
 
     docker_text = dockerfile.read_text(encoding="utf-8")
     assert "streamlit run app.py" in docker_text
@@ -52,8 +54,16 @@ def test_repo_has_ci_docker_and_deploy_readiness_files():
     assert "HEALTHCHECK" in docker_text
     assert "_stcore/health" in docker_text
     assert "--no-cache-dir" in docker_text
+    assert "--uid 1000" in docker_text
+    assert "--gid 1000" in docker_text
     assert "USER app" in docker_text
     assert "pip install -e ." not in docker_text
+
+    streamlit_smoke = ROOT / "scripts" / "streamlit_smoke.py"
+    streamlit_smoke_text = streamlit_smoke.read_text(encoding="utf-8")
+    assert streamlit_smoke.exists()
+    assert "_stcore/health" in streamlit_smoke_text
+    assert "feedback.sqlite" in streamlit_smoke_text
 
 
 def test_deployment_constraints_are_used_by_ci_and_docker():
@@ -63,6 +73,7 @@ def test_deployment_constraints_are_used_by_ci_and_docker():
     constraints_text = constraints.read_text(encoding="utf-8")
 
     assert constraints.exists()
+    assert "-c constraints-runtime.txt" in (ROOT / "requirements.txt").read_text(encoding="utf-8")
     assert "-c constraints-runtime.txt" in workflow_text
     assert "-c constraints-runtime.txt" in docker_text
     assert "fastapi==" in constraints_text
@@ -85,6 +96,8 @@ def test_repo_has_security_and_deployment_automation_files():
 
     assert "package-ecosystem: \"pip\"" in dependabot.read_text(encoding="utf-8")
     assert "github/codeql-action/analyze" in codeql.read_text(encoding="utf-8")
+    assert "enableCORS = false" not in streamlit_config.read_text(encoding="utf-8")
+    assert "enableXsrfProtection = true" in streamlit_config.read_text(encoding="utf-8")
     hf_space_text = hf_space.read_text(encoding="utf-8")
     assert "sdk: docker" in hf_space_text
     assert "app_port: 8501" in hf_space_text
@@ -104,7 +117,7 @@ def test_runtime_requirements_exclude_dev_only_dependencies():
     requirements = {
         line.split(">=", maxsplit=1)[0].split("==", maxsplit=1)[0].strip().lower()
         for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.strip().startswith("#")
+        if line.strip() and not line.strip().startswith(("#", "-"))
     }
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dev_dependencies = "\n".join(pyproject["project"]["optional-dependencies"]["dev"]).lower()
@@ -122,7 +135,13 @@ def test_local_runtime_artifacts_are_ignored_and_scanned():
 
     assert ".local_*" in gitignore_text
     assert ".local_*" in dockerignore_text
+    for pattern in ("*.sqlite", "*.sqlite-*", "*.sqlite3", "*.sqlite3-*", "*.db", "*.db-*", "*.pid"):
+        assert pattern in gitignore_text
+        assert pattern in dockerignore_text
     assert "\\.pid$" in workflow_text
+    assert "\\.sqlite($|-)" in workflow_text
+    assert "\\.sqlite3($|-)" in workflow_text
+    assert "\\.db($|-)" in workflow_text
 
 
 def test_neural_ranker_cache_is_bounded_for_deployment_memory():

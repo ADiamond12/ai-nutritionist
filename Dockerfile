@@ -16,8 +16,8 @@ RUN python -m pip install --upgrade --no-cache-dir pip \
     && python -m pip install --no-cache-dir -r requirements.txt -c constraints-runtime.txt \
     && python -m pip install --no-cache-dir .
 
-RUN groupadd --system app \
-    && useradd --system --gid app --home-dir /home/app --create-home app \
+RUN groupadd --gid 1000 app \
+    && useradd --uid 1000 --gid app --home-dir /home/app --create-home --shell /usr/sbin/nologin app \
     && chown -R app:app /app /home/app
 
 EXPOSE 8501

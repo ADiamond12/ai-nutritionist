@@ -19,6 +19,13 @@ dist/
 .env
 .env.*
 *.log
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.pid
 *.pdf
 *.zip
 *.pem

@@ -49,6 +49,9 @@ jobs:
       - name: Run evaluation smoke check
         run: python -m ai_nutritionist.evaluation
 
+      - name: Run Streamlit local smoke check
+        run: python scripts/streamlit_smoke.py
+
       - name: Run daily Mediterranean CLI smoke check
         run: >
           ai-nutritionist
@@ -77,7 +80,7 @@ jobs:
       - name: Check for forbidden artifact files and secret patterns
         shell: bash
         run: |
-          forbidden_artifact_paths="$(git ls-files | grep -E '(^|/)(__pycache__|\.pytest_cache|\.ruff_cache|\.mypy_cache|\.idea|\.local)(/|$)|(^|/)data/raw(/|$)|(\.env($|\.)|\.pem$|\.key$|\.p12$|\.pfx$|\.pdf$|\.zip$|\.pid$|\.sqlite$|\.db$)' || true)"
+          forbidden_artifact_paths="$(git ls-files | grep -E '(^|/)(__pycache__|\.pytest_cache|\.ruff_cache|\.mypy_cache|\.idea|\.local)(/|$)|(^|/)data/raw(/|$)|(\.env($|\.)|\.pem$|\.key$|\.p12$|\.pfx$|\.pdf$|\.zip$|\.pid$|\.sqlite($|-)|\.sqlite3($|-)|\.db($|-))' || true)"
           if [ -n "$forbidden_artifact_paths" ]; then
             echo "forbidden artifact files or directories found:"
             echo "$forbidden_artifact_paths"
@@ -115,7 +118,7 @@ jobs:
           exit 1
 
       - name: Check Docker container runs as non-root
-        run: test "$(docker exec ai-nutritionist-ci id -u)" != "0"
+        run: test "$(docker exec ai-nutritionist-ci id -u)" = "1000"
 
       - name: Show Docker logs on failure
         if: failure()

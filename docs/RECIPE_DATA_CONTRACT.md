@@ -4,7 +4,7 @@
 
 This document defines the ingredient-level recipe data milestone for AI Nutritionist: moving from a flat food catalog toward recipe decomposition without pretending that the current repository contains a broad production recipe database.
 
-The current planner is still valid as a general wellness recommender over catalog rows. Some rows are atomic foods, some are meal components, and some are opaque prepared dishes. The repository now includes a tiny fixture-backed validation layer and a five-recipe curated Mediterranean pilot; only those reviewed recipe-backed rows can be expanded into ingredient-level grocery lists.
+The current planner is still valid as a general wellness recommender over catalog rows. Some rows are atomic foods, some are meal components, and some are opaque prepared dishes. The repository now includes a tiny fixture-backed validation layer and a nine-recipe curated Mediterranean/Greek pilot; only those reviewed recipe-backed rows can be expanded into ingredient-level grocery lists.
 
 This is a product/data engineering contract, not medical validation. It must not be used to claim clinical accuracy, allergy safety, guaranteed nutrition adequacy, or therapeutic diet planning.
 

@@ -36,3 +36,34 @@ med_chickpea_feta_salad_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,25
 med_chickpea_feta_salad_v1,red_onion,red onion,vegetable,,curated,onion raw,60,g,60,raw,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
 med_chickpea_feta_salad_v1,lemon,lemon,fruit,,curated,lemon juice,35,g,35,served,per_100g,false,acid_base,true,true,,estimated,Curated USDA-style estimate,22,0.4,6.9,0.2,0.3,2.5,1,0
 med_chickpea_feta_salad_v1,oregano,oregano,seasoning,,curated,oregano dried,2,g,2,served,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,265,9,69,4.3,42,4,25,1.6
+med_fasolada_v1,white_beans,white beans,protein,,curated,white beans cooked,720,g,720,cooked,per_100g,false,legume_base,true,true,,estimated,Curated USDA-style estimate,139,9.7,25.1,0.4,6.3,0.3,3,0.1
+med_fasolada_v1,crushed_tomato,crushed tomato,vegetable,,curated,tomato crushed,400,g,400,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_fasolada_v1,carrot,carrot,vegetable,,curated,carrot raw,240,g,240,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,41,0.9,9.6,0.2,2.8,4.7,69,0
+med_fasolada_v1,celery,celery,vegetable,,curated,celery raw,150,g,150,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,16,0.7,3,0.2,1.6,1.8,80,0
+med_fasolada_v1,onion,onion,vegetable,,curated,onion raw,180,g,180,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_fasolada_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,40,g,40,cooked,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_fasolada_v1,salt,salt,seasoning,,curated,salt table,3,g,3,cooked,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0
+med_fasolada_v1,water,water,liquid,,curated,water,470,g,470,cooked,per_100g,false,liquid_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,0,0
+med_gigantes_briam_v1,gigantes_beans,gigantes beans,protein,,curated,large lima beans cooked,600,g,600,cooked,per_100g,false,legume_base,true,true,,estimated,Curated USDA-style estimate,115,7.8,20.9,0.4,7,0.6,2,0.1
+med_gigantes_briam_v1,eggplant,eggplant,vegetable,,curated,eggplant cooked,300,g,300,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,35,0.8,8.7,0.2,2.5,3.2,1,0
+med_gigantes_briam_v1,zucchini,zucchini,vegetable,,curated,zucchini raw,250,g,250,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,17,1.2,3.1,0.3,1,2.5,8,0
+med_gigantes_briam_v1,bell_pepper,bell pepper,vegetable,,curated,bell pepper raw,200,g,200,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,31,1,6,0.3,2.1,4.2,4,0
+med_gigantes_briam_v1,crushed_tomato,crushed tomato,vegetable,,curated,tomato crushed,400,g,400,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_gigantes_briam_v1,onion,onion,vegetable,,curated,onion raw,150,g,150,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_gigantes_briam_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,45,g,45,baked,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_gigantes_briam_v1,salt,salt,seasoning,,curated,salt table,2.5,g,2.5,baked,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0
+med_cod_plaki_v1,cod,cod,protein,,curated,cod cooked,320,g,320,baked,per_100g,false,protein_base,false,false,fish,estimated,Curated USDA-style estimate,82,18,0,0.7,0,0,54,0.1
+med_cod_plaki_v1,potatoes,potatoes,whole_grain,,curated,potatoes boiled,300,g,300,baked,per_100g,false,starch_base,true,true,,estimated,Curated USDA-style estimate,87,1.9,20.1,0.1,1.8,0.9,6,0
+med_cod_plaki_v1,crushed_tomato,crushed tomato,vegetable,,curated,tomato crushed,300,g,300,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_cod_plaki_v1,onion,onion,vegetable,,curated,onion raw,120,g,120,baked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_cod_plaki_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,24,g,24,baked,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_cod_plaki_v1,lemon,lemon,fruit,,curated,lemon juice,40,g,40,served,per_100g,false,acid_base,true,true,,estimated,Curated USDA-style estimate,22,0.4,6.9,0.2,0.3,2.5,1,0
+med_cod_plaki_v1,salt,salt,seasoning,,curated,salt table,2,g,2,baked,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0
+med_shrimp_tomato_orzo_v1,shrimp,shrimp,protein,,curated,shrimp cooked,320,g,320,sauteed,per_100g,false,protein_base,false,false,shellfish,estimated,Curated USDA-style estimate,99,24,0.2,0.3,0,0,111,0.1
+med_shrimp_tomato_orzo_v1,whole_wheat_orzo,whole wheat orzo,whole_grain,,curated,whole wheat pasta dry,160,g,160,cooked,per_100g,false,grain_base,true,true,wheat_gluten,estimated,Curated USDA-style estimate,350,13,72,2,8,2.5,5,0.4
+med_shrimp_tomato_orzo_v1,crushed_tomato,crushed tomato,vegetable,,curated,tomato crushed,350,g,350,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,18,0.9,3.9,0.2,1.2,2.6,5,0
+med_shrimp_tomato_orzo_v1,spinach,spinach,vegetable,,curated,spinach cooked,150,g,150,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,23,2.9,3.8,0.3,2.4,0.4,70,0
+med_shrimp_tomato_orzo_v1,feta,feta cheese,other,,curated,feta cheese,60,g,60,served,per_100g,false,dairy_base,true,false,milk,estimated,Curated USDA-style estimate,265,14,4,21,0,4,917,15
+med_shrimp_tomato_orzo_v1,olive_oil,olive oil,healthy_fat,,curated,olive oil,20,g,20,cooked,per_100g,false,fat_base,true,true,,estimated,Curated USDA-style estimate,884,0,0,100,0,0,0,13.8
+med_shrimp_tomato_orzo_v1,onion,onion,vegetable,,curated,onion raw,100,g,100,cooked,per_100g,false,vegetable_base,true,true,,estimated,Curated USDA-style estimate,40,1.1,9.3,0.1,1.7,4.2,4,0
+med_shrimp_tomato_orzo_v1,salt,salt,seasoning,,curated,salt table,1.5,g,1.5,cooked,per_100g,false,seasoning_base,true,true,,estimated,Curated USDA-style estimate,0,0,0,0,0,0,38758,0

@@ -22,3 +22,24 @@ def test_feedback_store_round_trips_entries_and_exports_csv(tmp_path: Path):
     assert entries[0].label == "Dinner"
     assert entries[0].avoid_terms == ["cod", "tomato"]
     assert "scope,label,sentiment,dietary_pattern,weight_goal,avoid_terms" in csv_text
+
+
+def test_feedback_store_trims_old_entries_when_retention_limit_is_reached(tmp_path: Path):
+    store = FeedbackStore(tmp_path / "feedback.sqlite", max_entries=2)
+
+    for index in range(3):
+        count = store.add(
+            FeedbackEntry(
+                scope="meal",
+                label=f"Meal {index}",
+                sentiment="liked",
+                dietary_pattern="mediterranean",
+                weight_goal="maintain",
+                avoid_terms=[],
+            )
+        )
+
+    entries = store.list_entries()
+
+    assert count == 2
+    assert [entry.label for entry in entries] == ["Meal 1", "Meal 2"]

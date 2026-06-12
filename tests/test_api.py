@@ -61,8 +61,32 @@ def test_api_daily_and_weekly_recommendations_hide_internal_scores(tmp_path: Pat
     assert not (tmp_path / ".local").exists()
 
 
-def test_api_default_feedback_store_is_created_only_when_feedback_is_used(tmp_path: Path, monkeypatch):
+def test_api_feedback_write_is_disabled_by_default_and_does_not_create_store(tmp_path: Path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/feedback",
+        json={
+            "scope": "meal",
+            "label": "Lunch",
+            "sentiment": "not_liked",
+            "dietary_pattern": "mediterranean",
+            "weight_goal": "lose",
+            "avoid_terms": ["tuna", "beans"],
+        },
+    )
+
+    assert response.status_code == 403
+    assert "disabled" in response.json()["detail"].lower()
+    assert not (tmp_path / ".local").exists()
+
+
+def test_api_default_feedback_store_is_created_only_when_feedback_write_is_enabled(
+    tmp_path: Path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     client = TestClient(create_app())
 
     response = client.post(
@@ -93,6 +117,7 @@ def test_api_feedback_readback_is_disabled_by_default(tmp_path: Path, monkeypatc
 
 
 def test_api_feedback_readback_can_be_enabled_for_local_review(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK", "1")
     client = TestClient(create_app(feedback_db_path=tmp_path / "feedback.sqlite"))
 
@@ -115,9 +140,24 @@ def test_api_feedback_readback_can_be_enabled_for_local_review(tmp_path: Path, m
     assert log.json()["entries"][0]["avoid_terms"] == ["tuna", "beans"]
 
 
+def test_api_feedback_readback_enabled_without_existing_store_does_not_create_db(
+    tmp_path: Path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK", "1")
+    client = TestClient(create_app())
+
+    response = client.get("/feedback")
+
+    assert response.status_code == 200
+    assert response.json() == {"count": 0, "entries": []}
+    assert not (tmp_path / ".local").exists()
+
+
 def test_api_feedback_db_env_path_is_resolved_when_app_is_created(tmp_path: Path, monkeypatch):
     initial_path = tmp_path / "initial" / "feedback.sqlite"
     later_path = tmp_path / "later" / "feedback.sqlite"
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     monkeypatch.setenv("AI_NUTRITIONIST_FEEDBACK_DB", str(initial_path))
     client = TestClient(create_app())
     monkeypatch.setenv("AI_NUTRITIONIST_FEEDBACK_DB", str(later_path))
@@ -144,6 +184,7 @@ def test_api_default_feedback_db_path_is_anchored_when_app_is_created(tmp_path: 
     later_cwd = tmp_path / "later"
     initial_cwd.mkdir()
     later_cwd.mkdir()
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     monkeypatch.chdir(initial_cwd)
     client = TestClient(create_app())
     monkeypatch.chdir(later_cwd)
@@ -169,10 +210,10 @@ def test_api_feedback_store_is_initialized_once_for_concurrent_feedback_requests
     created_paths: list[Path] = []
 
     class SlowFeedbackStore:
-        def __init__(self, path: Path | str):
+        def __init__(self, path: Path | str, max_entries: int = 1000):
             created_paths.append(Path(path))
             time.sleep(0.02)
-            self.store = FeedbackStore(path)
+            self.store = FeedbackStore(path, max_entries=max_entries)
 
         def add(self, entry: FeedbackEntry) -> int:
             return self.store.add(entry)
@@ -181,6 +222,7 @@ def test_api_feedback_store_is_initialized_once_for_concurrent_feedback_requests
             return self.store.list_entries()
 
     monkeypatch.setattr(api_module, "FeedbackStore", SlowFeedbackStore)
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     client = TestClient(create_app(feedback_db_path=tmp_path / "feedback.sqlite"))
 
     def submit_feedback(index: int):
@@ -205,6 +247,7 @@ def test_api_feedback_store_is_initialized_once_for_concurrent_feedback_requests
 
 
 def test_api_feedback_endpoint_persists_to_local_sqlite(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_API_FEEDBACK", "1")
     monkeypatch.setenv("AI_NUTRITIONIST_ENABLE_FEEDBACK_READBACK", "1")
     db_path = tmp_path / "feedback.sqlite"
     client = TestClient(create_app(feedback_db_path=db_path))

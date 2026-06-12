@@ -46,11 +46,11 @@ This repository is maintained as a standalone public software project. It is not
 13. Weekly mode calls the same recommender through deterministic rotation terms. Mediterranean mode rotates poultry, fish/seafood, legumes, vegetables, whole grains/starches, yogurt, and olive-oil sides so the output behaves more like a practical week plan than a repeated single-day result.
 14. `plan_outputs` groups generated daily or weekly catalog items into a grocery list and CSV export. When selected foods match reviewed recipe-backed rows, it can also produce ingredient-level grocery rows without exposing internal recipe metadata in the public meal items.
 15. The Streamlit UI records thumbs feedback only in local `st.session_state`. Negative feedback can become temporary avoid terms for `Regenerate with feedback`, and the session log can be exported as CSV.
-16. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and initializes the ignored local SQLite feedback store only when local feedback endpoints are used.
+16. The FastAPI layer serializes public-safe payloads through `presentation`, exposes a health check and OpenAPI docs, and initializes the ignored local SQLite feedback store only when API feedback writes are explicitly enabled and used.
 
 ## Data Provenance
 
-`data/foods_catalog.csv` is generated from the USDA FoodData Central FNDDS 2021-2023 CSV release dated October 2024. `data/mediterranean_foods.csv` is a curated extension with practical Mediterranean/Greek meal rows and estimated nutrients from USDA-style components. `data/recipes/` is a five-recipe ingredient-level pilot with curated-estimate nutrients, source metadata, and review fields. The full USDA archive is not committed.
+`data/foods_catalog.csv` is generated from the USDA FoodData Central FNDDS 2021-2023 CSV release dated October 2024. `data/mediterranean_foods.csv` is a curated extension with practical Mediterranean/Greek meal rows and estimated nutrients from USDA-style components. `data/recipes/` is a nine-recipe ingredient-level Mediterranean/Greek pilot with curated-estimate nutrients, source metadata, and review fields. The full USDA archive is not committed.
 
 ## Neural Model
 
@@ -68,4 +68,4 @@ Most catalog rows can represent atomic foods, components, or opaque prepared dis
 
 The system provides general wellness nutrition suggestions only. It is not medical advice, does not diagnose or treat conditions, and avoids claims of clinical accuracy.
 
-Feedback is intentionally local-first. The Streamlit app does not upload feedback, profile data, or generated plans to a remote service. The optional API feedback store is created lazily from feedback endpoints and writes only to a local SQLite path such as `.local/feedback.sqlite`, which is not committed.
+Feedback is intentionally local-first. The Streamlit app does not upload feedback, profile data, or generated plans to a remote service. The optional API feedback store is disabled by default, created lazily only after `AI_NUTRITIONIST_ENABLE_API_FEEDBACK=1` and `POST /feedback`, and writes only to a bounded local SQLite path such as `.local/feedback.sqlite`, which is not committed.
