@@ -17,7 +17,8 @@ def test_project_has_packaging_metadata_and_console_entrypoint():
     assert "ai-nutritionist" in project["scripts"]
     assert project["scripts"]["ai-nutritionist"] == "ai_nutritionist.cli:main"
     assert project["scripts"]["ai-nutritionist-api"] == "ai_nutritionist.api:main"
-    assert any(dependency.startswith("fastapi>=0.115") for dependency in project["dependencies"])
+    assert "fastapi>=0.165,<1" in project["dependencies"]
+    assert "starlette>=1.10,<2" in project["dependencies"]
 
 
 def test_repo_has_ci_docker_and_deploy_readiness_files():

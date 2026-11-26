@@ -13,7 +13,8 @@ authors = [
   { name = "Arsenios Diamantakos" }
 ]
 dependencies = [
-  "fastapi>=0.115,<1",
+  "fastapi>=0.165,<1",
+  "starlette>=1.10,<2",
   "pandas>=2.2,<4",
   "pydantic>=2.7,<3",
   "scikit-learn>=1.4,<2",
